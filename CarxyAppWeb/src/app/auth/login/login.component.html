@@ -1,0 +1,57 @@
+<div
+  class="min-h-screen flex justify-center items-center bg-gradient-to-l from-kingfisher-daisy-200 dark:from-kingfisher-daisy-700 to-kingfisher-daisy-900"
+>
+  <div class="dark:bg-gray-800 bg-white p-8 rounded-lg shadow-lg w-96">
+    <h2
+      class="text-center text-2xl font-bold text-kingfisher-daisy-600 dark:text-kingfisher-daisy-300 mb-6"
+    >
+      Iniciar Sesión
+    </h2>
+
+    <form>
+      <div class="mb-4">
+        <label class="block text-gray-800 dark:text-kingfisher-daisy-200">
+          Nombre de usuario
+        </label>
+        <input
+          type="text"
+          placeholder="Ej: Saerz"
+          [(ngModel)]="username"
+          name="username"
+          class="w-full p-2 mt-2 bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-white rounded-md border border-gray-300 dark:border-gray-700"
+        />
+      </div>
+
+      <div class="mb-6">
+        <label class="block text-gray-800 dark:text-kingfisher-daisy-200">
+          Contraseña
+        </label>
+        <input
+          type="password"
+          placeholder="********"
+          [(ngModel)]="password"
+          name="password"
+          class="w-full p-2 mt-2 bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-white rounded-md border border-gray-300 dark:border-gray-700"
+        />
+      </div>
+
+      <button
+        (click)="Login()"
+        class="w-full bg-kingfisher-daisy-600 hover:bg-kingfisher-daisy-500 dark:text-white text-white font-bold py-2 rounded-md transition-colors"
+      >
+        Iniciar Sesión
+      </button>
+
+      <p
+        class="text-center text-sm text-gray-700 dark:text-kingfisher-daisy-300 mt-4"
+      >
+        ¿Aún no tienes cuenta?
+        <a
+          routerLink="/register"
+          class="text-kingfisher-daisy-600 dark:text-kingfisher-daisy-500"
+          >Regístrate</a
+        >
+      </p>
+    </form>
+  </div>
+</div>

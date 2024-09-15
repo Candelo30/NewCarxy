@@ -4,7 +4,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework import status
-from .serializers import UsuariosSerializer
+from .serializers import UsuariosSerializers
 
 from django.shortcuts import get_object_or_404
 from .models import Usuarios
@@ -33,7 +33,7 @@ def iniciarSesion(request):
             {"error": "Invalid password"}, status=status.HTTP_400_BAD_REQUEST
         )
     token, created = Token.objects.get_or_create(user=user)
-    serializer = UsuariosSerializer(instance=user)
+    serializer = UsuariosSerializers(instance=user)
     return Response(
         {"token": token.key, "user": serializer.data}, status=status.HTTP_200_OK
     )
@@ -42,7 +42,7 @@ def iniciarSesion(request):
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def registro(request):
-    serializer = UsuariosSerializer(data=request.data)
+    serializer = UsuariosSerializers(data=request.data)
     if serializer.is_valid():
         serializer.save()
         user = Usuarios.objects.get(username=serializer.data["username"])
