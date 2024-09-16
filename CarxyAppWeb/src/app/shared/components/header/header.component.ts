@@ -1,6 +1,7 @@
 import { Component, ElementRef, HostListener, OnInit } from '@angular/core';
 import { CookieService } from 'ngx-cookie-service';
 import { AuthService } from '../../../auth/auth.service';
+import { UserService } from '../../../core/services/user.service';
 
 @Component({
   selector: 'app-header',
@@ -13,12 +14,14 @@ export class HeaderComponent implements OnInit {
   isOpenMenu = false;
   userProfilePicture: string | null = null;
   userName: string = '';
+  roleUser = false;
   selectedColor: string = '';
 
   constructor(
     private cookieService: CookieService,
     private elRef: ElementRef,
-    private authService: AuthService
+    private authService: AuthService,
+    private UserData: UserService
   ) {
     this.selectedColor = this.getRandomColor();
   }
@@ -36,18 +39,13 @@ export class HeaderComponent implements OnInit {
   }
 
   private loadUserData(): void {
-    const loggedInUser = this.cookieService.get('loggedInUser');
-
-    if (loggedInUser) {
-      try {
-        const user = JSON.parse(loggedInUser);
-        this.userName = user.username;
-      } catch (error) {
-        console.error('Error al parsear los datos del usuario', error);
-      }
-    } else {
-      console.warn('No se encontró información del usuario en las cookies');
-    }
+    this.UserData.DataUser().subscribe((data) => {
+      console.log('Foto de perfil: ', data.foto_perfil);
+      this.userName = data.username;
+      this.roleUser = data.is_staff;
+      this.userProfilePicture = 'http://localhost:8000/' + data.foto_perfil;
+    });
+    // -----------------
   }
 
   ToggleMenu() {
