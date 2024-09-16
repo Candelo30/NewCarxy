@@ -37,7 +37,6 @@ export class AuthService {
   logout() {
     // Elimina el token y los datos del usuario de las cookies
     this.BorrarToken();
-    this.cookies.delete('loggedInUser');
 
     // Redirige al usuario a la página de login
     this.router.navigate(['/login']);

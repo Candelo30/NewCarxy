@@ -3,7 +3,7 @@
 >
   <!-- Logo -->
   <div class="flex items-center text-slate-950 dark:text-white font-bold">
-    <img class="w-12 mr-2" src="/Logo5__main.png" alt="Logo" />
+    <img class="w-12" src="/Logo5__main.png" alt="Logo" />
     <span class="text-xl">arxy</span>
   </div>
 
@@ -82,7 +82,7 @@
           } @else {
           <img
             id="profile-pic"
-            class="w-14 h-14 rounded-full cursor-pointer border-2 border-kingfisher-daisy-500 object-cover"
+            class="w-8 h-8 rounded-full cursor-pointer border-2 border-kingfisher-daisy-500 object-cover"
             [src]="userProfilePicture ? userProfilePicture : ''"
             [alt]="userName ? getInitials(userName) : 'Foto de perfil'"
             [style.background-color]="!userProfilePicture ? selectedColor : ''"
@@ -129,6 +129,23 @@
           Administración</a
         >
         }
+        <a
+          class="cursor-pointer flex items-center gap-1 px-4 py-2 text-sm text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-slate-900"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            style="fill: currentColor"
+          >
+            <path
+              d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z"
+            ></path>
+            <path d="M11 11h2v6h-2zm0-4h2v2h-2z"></path>
+          </svg>
+          Ayuda</a
+        >
         <a
           class="cursor-pointer flex items-center gap-1 px-4 py-2 text-sm text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-slate-900"
         >
