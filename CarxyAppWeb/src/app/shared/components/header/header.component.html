@@ -1,1 +1,150 @@
-<p>header works!</p>
+<header
+  class="w-full p-3 justify-between shadow-sm bg-slate-200 dark:bg-slate-950 flex items-center"
+>
+  <!-- Logo -->
+  <div class="flex items-center text-slate-950 dark:text-white font-bold">
+    <img class="w-12 mr-2" src="/Logo5__main.png" alt="Logo" />
+    <span class="text-xl">arxy</span>
+  </div>
+
+  <nav class="flex items-center space-x-6">
+    <!-- Items del menú de navegación -->
+
+    <a
+      class="cursor-pointer text-slate-950 dark:text-white hover:text-kingfisher-daisy-500 flex items-center gap-1"
+      ><svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        style="fill: currentColor"
+      >
+        <path
+          d="M12.71 2.29a1 1 0 0 0-1.42 0l-9 9a1 1 0 0 0 0 1.42A1 1 0 0 0 3 13h1v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7h1a1 1 0 0 0 1-1 1 1 0 0 0-.29-.71zM6 20v-9.59l6-6 6 6V20z"
+        ></path></svg
+      >Inicio</a
+    >
+    <a
+      class="cursor-pointer text-slate-950 dark:text-white hover:text-kingfisher-daisy-500 flex items-center gap-1"
+      ><svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        style="fill: currentColor"
+      >
+        <path
+          d="M8.707 19.707 18 10.414 13.586 6l-9.293 9.293a1.003 1.003 0 0 0-.263.464L3 21l5.242-1.03c.176-.044.337-.135.465-.263zM21 7.414a2 2 0 0 0 0-2.828L19.414 3a2 2 0 0 0-2.828 0L15 4.586 19.414 9 21 7.414z"
+        ></path></svg
+      >Personalización</a
+    >
+
+    <!-- Foto de perfil -->
+    <div class="relative">
+      <!-- Imagen de perfil -->
+      <!-- En caso de que no haya imagen, muestra iniciales -->
+      @if(!userProfilePicture){
+      <div
+        class="w-14 h-14 rounded-full cursor-pointer border-2 border-kingfisher-daisy-500 flex items-center justify-center text-white text-lg"
+        [style.background-color]="selectedColor"
+        (click)="ToggleMenu()"
+      >
+        {{ getInitials(userName) }}
+      </div>
+      } @else {
+      <img
+        id="profile-pic"
+        class="w-14 h-14 rounded-full cursor-pointer border-2 border-kingfisher-daisy-500 object-cover"
+        [src]="userProfilePicture ? userProfilePicture : ''"
+        [alt]="userName ? getInitials(userName) : 'Foto de perfil'"
+        [style.background-color]="!userProfilePicture ? selectedColor : ''"
+        (click)="ToggleMenu()"
+      />}
+
+      <!-- Menu desplegable -->
+      @if(isOpenMenu){
+      <div
+        id="dropdown-menu"
+        class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 dark:bg-slate-800"
+      >
+        <div
+          class="flex items-center gap-1 px-4 py-2 text-sm text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-slate-900"
+        >
+          <!-- En caso de que no haya imagen, muestra iniciales -->
+          @if(!userProfilePicture){
+          <div
+            class="w-8 h-8 rounded-full cursor-pointer border-2 border-kingfisher-daisy-500 flex items-center justify-center text-white text-lg"
+            [style.background-color]="selectedColor"
+            (click)="ToggleMenu()"
+          >
+            {{ getInitials(userName) }}
+          </div>
+          } @else {
+          <img
+            id="profile-pic"
+            class="w-14 h-14 rounded-full cursor-pointer border-2 border-kingfisher-daisy-500 object-cover"
+            [src]="userProfilePicture ? userProfilePicture : ''"
+            [alt]="userName ? getInitials(userName) : 'Foto de perfil'"
+            [style.background-color]="!userProfilePicture ? selectedColor : ''"
+            (click)="ToggleMenu()"
+          />}
+          <span class="font-bold text-base"> {{ "@" + userName }}</span>
+        </div>
+
+        <a
+          class="cursor-pointer flex items-center gap-1 px-4 py-2 text-sm text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-slate-900"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            style="fill: currentColor"
+          >
+            <path
+              d="M7.5 6.5C7.5 8.981 9.519 11 12 11s4.5-2.019 4.5-4.5S14.481 2 12 2 7.5 4.019 7.5 6.5zM20 21h1v-1c0-3.859-3.141-7-7-7h-4c-3.86 0-7 3.141-7 7v1h17z"
+            ></path>
+          </svg>
+          Perfil</a
+        >
+        <a
+          class="cursor-pointer flex items-center gap-1 px-4 py-2 text-sm text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-slate-900"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            style="fill: currentColor"
+          >
+            <path
+              d="M12 16c2.206 0 4-1.794 4-4s-1.794-4-4-4-4 1.794-4 4 1.794 4 4 4zm0-6c1.084 0 2 .916 2 2s-.916 2-2 2-2-.916-2-2 .916-2 2-2z"
+            ></path>
+            <path
+              d="m2.845 16.136 1 1.73c.531.917 1.809 1.261 2.73.73l.529-.306A8.1 8.1 0 0 0 9 19.402V20c0 1.103.897 2 2 2h2c1.103 0 2-.897 2-2v-.598a8.132 8.132 0 0 0 1.896-1.111l.529.306c.923.53 2.198.188 2.731-.731l.999-1.729a2.001 2.001 0 0 0-.731-2.732l-.505-.292a7.718 7.718 0 0 0 0-2.224l.505-.292a2.002 2.002 0 0 0 .731-2.732l-.999-1.729c-.531-.92-1.808-1.265-2.731-.732l-.529.306A8.1 8.1 0 0 0 15 4.598V4c0-1.103-.897-2-2-2h-2c-1.103 0-2 .897-2 2v.598a8.132 8.132 0 0 0-1.896 1.111l-.529-.306c-.924-.531-2.2-.187-2.731.732l-.999 1.729a2.001 2.001 0 0 0 .731 2.732l.505.292a7.683 7.683 0 0 0 0 2.223l-.505.292a2.003 2.003 0 0 0-.731 2.733zm3.326-2.758A5.703 5.703 0 0 1 6 12c0-.462.058-.926.17-1.378a.999.999 0 0 0-.47-1.108l-1.123-.65.998-1.729 1.145.662a.997.997 0 0 0 1.188-.142 6.071 6.071 0 0 1 2.384-1.399A1 1 0 0 0 11 5.3V4h2v1.3a1 1 0 0 0 .708.956 6.083 6.083 0 0 1 2.384 1.399.999.999 0 0 0 1.188.142l1.144-.661 1 1.729-1.124.649a1 1 0 0 0-.47 1.108c.112.452.17.916.17 1.378 0 .461-.058.925-.171 1.378a1 1 0 0 0 .471 1.108l1.123.649-.998 1.729-1.145-.661a.996.996 0 0 0-1.188.142 6.071 6.071 0 0 1-2.384 1.399A1 1 0 0 0 13 18.7l.002 1.3H11v-1.3a1 1 0 0 0-.708-.956 6.083 6.083 0 0 1-2.384-1.399.992.992 0 0 0-1.188-.141l-1.144.662-1-1.729 1.124-.651a1 1 0 0 0 .471-1.108z"
+            ></path>
+          </svg>
+          Ajustes</a
+        >
+        <a
+          (click)="logout()"
+          class="flex cursor-pointer items-center gap-1 px-4 py-2 text-sm text-red-400 dark:text-red-500 hover:bg-gray-100 dark:hover:bg-slate-900"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            style="fill: currentColor"
+          >
+            <path
+              d="M19.002 3h-14c-1.103 0-2 .897-2 2v4h2V5h14v14h-14v-4h-2v4c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2V5c0-1.103-.898-2-2-2z"
+            ></path>
+            <path d="m11 16 5-4-5-4v3.001H3v2h8z"></path></svg
+          >Cerrar sesión</a
+        >
+      </div>
+      }
+    </div>
+  </nav>
+</header>

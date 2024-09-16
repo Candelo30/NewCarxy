@@ -1,1 +1,7 @@
-<p>home works!</p>
+<app-header></app-header>
+
+<main>
+  @for (item of allPublications; track $index) {}@empty {
+  <p>No hay nada aquí</p>
+  }
+</main>

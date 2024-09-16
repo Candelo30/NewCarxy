@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 import { Observable } from 'rxjs';
 
@@ -7,7 +8,11 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class AuthService {
-  constructor(private http: HttpClient, private cookies: CookieService) {}
+  constructor(
+    private http: HttpClient,
+    private cookies: CookieService,
+    private router: Router
+  ) {}
   Registrar(usuario: any): Observable<any> {
     return this.http.post('http://127.0.0.1:8000/registro/', usuario);
   }
@@ -26,5 +31,15 @@ export class AuthService {
 
   BorrarToken() {
     return this.cookies.delete('token');
+  }
+
+  // Método para cerrar sesión (logout)
+  logout() {
+    // Elimina el token y los datos del usuario de las cookies
+    this.BorrarToken();
+    this.cookies.delete('loggedInUser');
+
+    // Redirige al usuario a la página de login
+    this.router.navigate(['/login']);
   }
 }
