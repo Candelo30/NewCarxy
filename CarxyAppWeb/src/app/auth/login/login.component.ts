@@ -27,9 +27,6 @@ export class LoginComponent {
       if (data.token) {
         this.userService.AsignarToken(data.token);
       }
-      if (data.user) {
-        this.cookieService.set('loggedInUser', JSON.stringify(data.user), 7); // Expira en 7 días
-      }
 
       this.router.navigate(['/home']);
     });
