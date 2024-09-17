@@ -40,10 +40,11 @@ export class HeaderComponent implements OnInit {
 
   private loadUserData(): void {
     this.UserData.DataUser().subscribe((data) => {
-      console.log('Foto de perfil: ', data.foto_perfil);
       this.userName = data.username;
       this.roleUser = data.is_staff;
-      this.userProfilePicture = 'http://localhost:8000/' + data.foto_perfil;
+      if (data.foto_perfil) {
+        this.userProfilePicture = 'http://localhost:8000/' + data.foto_perfil;
+      }
     });
     // -----------------
   }
