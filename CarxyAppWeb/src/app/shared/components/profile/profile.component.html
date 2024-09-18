@@ -37,7 +37,7 @@
     <div class="flex flex-col md:flex-row gap-6">
       <!-- Sección de perfil del usuario -->
       <div
-        class="w-full md:w-2/6 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 transition-colors duration-300"
+        class="w-full md:w-2/6 h-min bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 transition-colors duration-300"
       >
         <div class="text-center md:text-left">
           @if (rolUser) {
@@ -98,23 +98,92 @@
         </h3>
 
         <!-- Lista de publicaciones -->
-        <div class="space-y-4">
-          <!-- Publicación individual -->
+        <div class="space-y-4 flex items-center flex-col">
           <div
-            class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg shadow transition-colors duration-300"
+            *ngFor="let publicacion of publicaciones"
+            class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg shadow transition-colors duration-300 w-3/4"
           >
-            <p class="text-gray-700 dark:text-gray-300">
-              Contenido de la publicación 1...
+            <!-- Usuario -->
+            <div class="flex items-center mb-4">
+              <img
+                [src]="publicacion.usuario_foto"
+                alt="Foto de perfil"
+                class="w-10 h-10 rounded-full mr-4"
+              />
+              <div>
+                <p class="text-gray-800 dark:text-white font-bold">
+                  {{ publicacion.usuario_username }}
+                  <!-- usuario_username -->
+                </p>
+                <p class="text-gray-600 dark:text-gray-400 text-sm">
+                  {{
+                    publicacion.fecha_creacion | date : "yyyy-MM-dd HH:mm:ss"
+                  }}
+                  <!-- fecha_creacion -->
+                </p>
+              </div>
+            </div>
+            <!-- Descripción de la publicación -->
+            <p class="text-gray-700 dark:text-gray-300 mb-4">
+              {{ publicacion.descripcion }}
+              <!-- descripcion -->
             </p>
+
+            <!-- Imagen de la publicación -->
+            <div class="mb-4">
+              <img
+                [src]="publicacion.imagen"
+                alt="Imagen de la publicación"
+                class="h-auto rounded-lg"
+              />
+            </div>
+
+            <!-- Reacciones -->
+            <div class="flex items-center space-x-4">
+              <button class="text-blue-500 hover:text-blue-700">
+                ❤️ {{ publicacion.megusta }}
+                <!-- megusta -->
+              </button>
+              <button class="text-gray-500 hover:text-gray-700">
+                💬 {{ publicacion.comentarios.length }} comentarios
+                <!-- Aquí se cuenta la cantidad de comentarios -->
+              </button>
+            </div>
+
+            <!-- Lista de comentarios -->
+            <div class="mt-4 space-y-2">
+              <div
+                *ngFor="let comentario of publicacion.comentarios"
+                class="flex items-start space-x-2"
+              >
+                @if (comentario.usuario_foto) {
+                <img
+                  [src]="comentario.usuario_foto"
+                  alt="Foto de perfil"
+                  class="w-8 h-8 rounded-full"
+                />
+
+                }@else {
+                <div
+                  class="w-8 h-8 rounded-full flex items-center justify-center"
+                  [style.background-color]="selectedColor"
+                >
+                  {{ getInitials(comentario.usuario_username) }}
+                </div>
+                }
+                <div>
+                  <p class="text-sm text-gray-800 dark:text-white font-bold">
+                    {{ comentario.usuario_username }}
+                  </p>
+                  <!-- usuario_username del comentario -->
+                  <p class="text-sm text-gray-600 dark:text-gray-400">
+                    {{ comentario.comentario }}
+                    <!-- comentario -->
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
-          <div
-            class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg shadow transition-colors duration-300"
-          >
-            <p class="text-gray-700 dark:text-gray-300">
-              Contenido de la publicación 2...
-            </p>
-          </div>
-          <!-- Se pueden agregar más publicaciones dinámicamente -->
         </div>
       </div>
     </div>

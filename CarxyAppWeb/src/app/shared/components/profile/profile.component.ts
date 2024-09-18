@@ -4,11 +4,14 @@ import { UserService } from '../../../core/services/user.service';
 import { StatesService } from '../../../core/services/states.service';
 
 import { LoadingButtonComponent } from '../loading-button/loading-button.component';
+import { PublicationsService } from '../../../core/services/publications.service';
+import { response } from 'express';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [HeaderComponent, LoadingButtonComponent],
+  imports: [HeaderComponent, LoadingButtonComponent, CommonModule],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css',
 })
@@ -22,13 +25,30 @@ export class ProfileComponent implements OnInit {
   rolUser = true;
   userProfilePicture = '';
   isLoading = true;
-  constructor(private UserData: UserService, private state: StatesService) {}
+  publicaciones: any = [];
+
+  constructor(
+    private UserData: UserService,
+    private state: StatesService,
+    private PublicationData: PublicationsService
+  ) {}
 
   ngOnInit(): void {
     this.state.getColor().subscribe((response) => {
       this.selectedColor = response;
     });
     this.loadUserData();
+    this.loadPublication();
+  }
+
+  private loadPublication(): void {
+    this.PublicationData.loadAllResources().subscribe({
+      next: (response) => {
+        const data = response.userDataPublications;
+        this.publicaciones = data;
+        console.log('Los datos de la publicación', data);
+      },
+    });
   }
 
   // Método para cargar los datos del usuario
