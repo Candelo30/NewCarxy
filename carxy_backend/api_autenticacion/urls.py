@@ -2,10 +2,11 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
 from rest_framework.routers import DefaultRouter
-from .views import UsuarioViewSet
+from .views import *
 
 router = DefaultRouter()
-router.register(r'usuarios', UsuarioViewSet, basename='usuario')
+router.register(r"usuarios", UsuarioViewSet, basename="usuario")
+router.register(r"publicaciones", PublicacionUsuarioViewSet, basename="publicaciones")
 
 
 urlpatterns = router.urls

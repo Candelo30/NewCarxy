@@ -11,7 +11,7 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
-from .serializers import UsuariosSerializers
+from .serializers import *
 from .models import *
 
 from django.shortcuts import render
@@ -63,13 +63,13 @@ def registro(request):
 
 
 # Vistas
-#  _________________________________________________ 
+#  _________________________________________________
 # Vista para obtener, actualizar y eliminar un usuario
 class UsuarioViewSet(viewsets.ModelViewSet):
     queryset = Usuarios.objects.all()
     serializer_class = UsuariosSerializers
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAdminUser]   
+    permission_classes = [IsAdminUser]
 
 
 class PerfilView(APIView):
@@ -80,3 +80,144 @@ class PerfilView(APIView):
         # Obtenemos los datos del usuario autenticado
         serializer = UsuariosSerializers(instance=request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# ______________________________
+
+
+# Publicaciones
+
+
+class PublicacionPublicaViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Publicacion.objects.all()
+    serializer_class = PublicacionSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [AllowAny]
+
+
+# ViewSet para que los usuarios manejen solo sus publicaciones
+class PublicacionUsuarioViewSet(viewsets.ModelViewSet):
+    serializer_class = PublicacionSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Los usuarios normales solo ven sus propias publicaciones
+        return Publicacion.objects.filter(usuario=self.request.user)
+
+
+# Comentarios
+@api_view(["GET", "POST"])
+@permission_classes([IsAuthenticated])
+def lista_comentarios(request):
+    if request.method == "GET":
+        comentarios = Comentario.objects.all()
+        serializer = ComentarioSerializer(comentarios, many=True)
+        return Response(serializer.data)
+
+    if request.method == "POST":
+        serializer = ComentarioSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(usuario=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def eliminar_comentario(request, pk):
+    comentario = get_object_or_404(Comentario, pk=pk)
+
+    # Permitir que solo el usuario propietario o un administrador elimine el comentario
+    if request.user == comentario.usuario or request.user.is_staff:
+        comentario.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    return Response(
+        {"error": "No tienes permiso para eliminar este comentario"},
+        status=status.HTTP_403_FORBIDDEN,
+    )
+
+
+# Modelos
+@api_view(["GET", "POST"])
+@permission_classes([IsAuthenticated])
+def lista_modelos(request):
+    if request.method == "GET":
+        modelos = Modelo3D.objects.all()
+        serializer = Modelo3DSerializer(modelos, many=True)
+        return Response(serializer.data)
+
+    if request.method == "POST":
+        if not request.user.is_staff:
+            return Response(
+                {"error": "Solo los administradores pueden agregar modelos"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        serializer = Modelo3DSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["PUT", "DELETE"])
+@permission_classes([IsAuthenticated])
+def modificar_eliminar_modelo(request, pk):
+    modelo = get_object_or_404(Modelo3D, pk=pk)
+
+    if request.method == "PUT":
+        # Solo los administradores pueden modificar el modelo completo
+        if not request.user.is_staff:
+            return Response(
+                {"error": "No tienes permiso para editar este modelo"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        serializer = Modelo3DSerializer(modelo, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    if request.method == "DELETE":
+        if not request.user.is_staff:
+            return Response(
+                {"error": "No tienes permiso para eliminar este modelo"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        modelo.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# Personalización de partes
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def personalizar_parte(request, pk):
+    parte = get_object_or_404(Parte, pk=pk)
+
+    # Verificar que la parte pertenezca al usuario
+    if parte.usuario != request.user:
+        return Response(
+            {"error": "No tienes permiso para personalizar esta parte."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    # Cambiar el color de la parte
+    color = request.data.get("color")
+    parte.color = color
+    parte.save()
+
+    # Guardar la personalización
+    personalizacion = Personalizacion.objects.create(
+        nombre_personalizacion=f"Personalización de {parte.nombre_parte}",
+        fecha_creacion=request.data.get("fecha_creacion"),
+        usuario=request.user,
+        modelo=parte.modelo,
+    )
+
+    return Response(
+        {
+            "message": "Parte personalizada con éxito",
+            "personalizacion": personalizacion.id,
+        },
+        status=status.HTTP_200_OK,
+    )

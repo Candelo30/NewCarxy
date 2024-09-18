@@ -26,5 +26,5 @@ urlpatterns = [
     path("api/", include("api_autenticacion.urls")),
     path("iniciar-sesion/", views.iniciarSesion),
     path("registro/", views.registro),
-    path('perfil/', views.PerfilView.as_view(), name='perfil'),
+    path("perfil/", views.PerfilView.as_view(), name="perfil"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
