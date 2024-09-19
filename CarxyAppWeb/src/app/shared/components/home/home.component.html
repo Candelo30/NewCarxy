@@ -1,7 +1,15 @@
+<app-loading-button [isLoading]="isLoading"></app-loading-button>
+@if(!isLoading){
 <app-header></app-header>
 
 <main>
   @for (item of allPublications; track $index) {}@empty {
-  <p>No hay nada aquí</p>
+
+  <div
+    class="w-full h-screen flex items-center justify-center"
+    style="height: calc(100vh - 80px)"
+  ></div>
+
   }
 </main>
+}
