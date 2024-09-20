@@ -5,6 +5,7 @@ import { HomeComponent } from './shared/components/home/home.component';
 import { AuthGuard } from './auth/auth.guard';
 import { ProfileComponent } from './shared/components/profile/profile.component';
 import { NoAuthGuard } from './auth/no-auth.guard';
+import { HelpComponent } from './shared/components/help/help.component';
 
 export const routes: Routes = [
   { path: 'login', canActivate: [NoAuthGuard], component: LoginComponent }, // Ruta para el inicio de sesión
@@ -13,6 +14,13 @@ export const routes: Routes = [
     canActivate: [NoAuthGuard],
     component: RegisterComponent,
   }, // Ruta para el registro
+  {
+    path: 'admin',
+    canActivate: [AuthGuard],
+    loadChildren: () =>
+      import('./admin/admin.module').then((m) => m.AdminModule),
+  },
+  { path: 'help', component: HelpComponent, canActivate: [AuthGuard] },
   { path: 'home', component: HomeComponent, canActivate: [AuthGuard] }, // Ruta para el inicio de sesión
   { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] }, // Ruta para el inicio de sesión
   { path: '', redirectTo: 'home', pathMatch: 'full' }, // Ruta predeterminada redirige a login
