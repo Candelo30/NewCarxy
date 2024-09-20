@@ -10,6 +10,33 @@ class Usuarios(AbstractUser):
 # _______________________________
 
 
+class Publicacion(models.Model):
+    usuario = models.ForeignKey(
+        Usuarios, on_delete=models.CASCADE, related_name="publicaciones"
+    )
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    imagen = models.ImageField(upload_to="img/", null=True, blank=True)
+    descripcion = models.TextField()
+    megusta = models.IntegerField(default=0)
+
+    def _str_(self):
+        return f"Publicación: {self.descripcion} por {self.usuario.username}"
+
+
+class Comentario(models.Model):
+    usuario = models.ForeignKey(
+        Usuarios, on_delete=models.CASCADE, related_name="comentarios"
+    )
+    publicacion = models.ForeignKey(
+        Publicacion, on_delete=models.CASCADE, related_name="comentarios"
+    )
+    comentario = models.TextField()
+    fecha_comentario = models.DateTimeField(auto_now_add=True)
+
+    def _str_(self):
+        return f"Comentario de {self.usuario.username} en {self.publicacion.titulo}"
+
+
 class Modelo3D(models.Model):
     nombre_modelo = models.CharField(max_length=100)
     fecha_creacion = models.DateField()
@@ -52,30 +79,3 @@ class Parte(models.Model):
         return (
             f"{self.nombre_parte} ({self.color}) del modelo {self.modelo.nombre_modelo}"
         )
-
-
-class Publicacion(models.Model):
-    usuario = models.ForeignKey(
-        Usuarios, on_delete=models.CASCADE, related_name="publicaciones"
-    )
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
-    imagen = models.ImageField(upload_to="img/", null=True, blank=True)
-    descripcion = models.TextField()
-    megusta = models.IntegerField(default=0)
-
-    def _str_(self):
-        return f"Publicación: {self.descripcion} por {self.usuario.username}"
-
-
-class Comentario(models.Model):
-    usuario = models.ForeignKey(
-        Usuarios, on_delete=models.CASCADE, related_name="comentarios"
-    )
-    publicacion = models.ForeignKey(
-        Publicacion, on_delete=models.CASCADE, related_name="comentarios"
-    )
-    comentario = models.TextField()
-    fecha_comentario = models.DateTimeField(auto_now_add=True)
-
-    def _str_(self):
-        return f"Comentario de {self.usuario.username} en {self.publicacion.titulo}"

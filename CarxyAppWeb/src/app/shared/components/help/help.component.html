@@ -1,0 +1,45 @@
+<app-header></app-header>
+
+<div
+  class="help-container w-full h-screen overflow-auto p-6 bg-gray-100 dark:bg-gray-900 transition-colors"
+  style="height: calc(100vh - 96px)"
+>
+  <!-- Sección de Artículos -->
+  <h2
+    class="text-2xl font-semibold mt-8 text-kingfisher-daisy-500 dark:text-white"
+  >
+    Artículos
+  </h2>
+  <div class="space-y-4 mt-4">
+    <div
+      *ngFor="let article of articles"
+      class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md"
+    >
+      <h3 class="font-bold text-lg text-kingfisher-daisy-600 dark:text-white">
+        {{ article.title }}
+      </h3>
+      <p class="text-gray-600 dark:text-gray-300">{{ article.content }}</p>
+      <a [href]="article.link" class="text-blue-600 hover:underline"
+        >Leer más</a
+      >
+    </div>
+  </div>
+
+  <!-- Preguntas Frecuentes -->
+  <h2
+    class="text-2xl font-semibold mt-8 text-kingfisher-daisy-500 dark:text-white"
+  >
+    Preguntas Frecuentes
+  </h2>
+  <div class="space-y-4 mt-4">
+    <div
+      *ngFor="let faq of faqs"
+      class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md"
+    >
+      <h3 class="font-bold text-lg text-kingfisher-daisy-600 dark:text-white">
+        {{ faq.question }}
+      </h3>
+      <p class="text-gray-600 dark:text-gray-300">{{ faq.answer }}</p>
+    </div>
+  </div>
+</div>

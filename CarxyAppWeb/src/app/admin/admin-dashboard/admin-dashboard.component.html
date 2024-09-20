@@ -1,0 +1,94 @@
+<app-header></app-header>
+
+<main
+  class="px-4 mt-4 w-full h-screen overflow-auto"
+  style="height: calc(100vh - 96px)"
+>
+  <div
+    class="admin-dashboard p-6 bg-gray-100 dark:bg-gray-900 min-h-screen transition-colors"
+  >
+    <h1
+      class="text-3xl font-bold mb-6 text-kingfisher-daisy-600 dark:text-white"
+    >
+      Panel de Administración
+    </h1>
+
+    <!-- Botón de Navegación a Usuarios -->
+    <div class="mb-6">
+      <a
+        routerLink="/admin/usuarios"
+        class="inline-flex items-center px-4 py-2 bg-kingfisher-daisy-600 text-white rounded-md shadow-md hover:bg-kingfisher-daisy-500 transition duration-200"
+      >
+        Gestionar Usuarios
+      </a>
+    </div>
+
+    <!-- Resumen de Estadísticas -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div
+        class="bg-kingfisher-daisy-500 text-white p-5 rounded-lg shadow-lg transition-transform transform hover:scale-105"
+      >
+        <h3 class="text-lg font-bold">Total de Usuarios</h3>
+        <p class="text-3xl">{{ totalUsuarios }}</p>
+      </div>
+      <div
+        class="bg-kingfisher-daisy-400 text-white p-5 rounded-lg shadow-lg transition-transform transform hover:scale-105"
+      >
+        <h3 class="text-lg font-bold">Total de Publicaciones</h3>
+        <p class="text-3xl">{{ totalPublicaciones }}</p>
+      </div>
+      <div
+        class="bg-kingfisher-daisy-300 text-white p-5 rounded-lg shadow-lg transition-transform transform hover:scale-105"
+      >
+        <h3 class="text-lg font-bold">Total de Modelos 3D</h3>
+        <p class="text-3xl">{{ totalModelos }}</p>
+      </div>
+    </div>
+
+    <!-- Últimas Publicaciones -->
+    <div class="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
+      <h3
+        class="text-xl font-bold text-kingfisher-daisy-600 dark:text-white mb-2"
+      >
+        Últimas Publicaciones
+      </h3>
+      <ul class="space-y-2">
+        <li
+          *ngFor="let publicacion of ultimasPublicaciones"
+          class="p-3 border-b border-gray-200 dark:border-gray-700"
+        >
+          <strong class="text-gray-800 dark:text-gray-200">{{
+            publicacion.usuario.username
+          }}</strong
+          >: {{ publicacion.descripcion }}
+          <span class="text-gray-500 dark:text-gray-400">{{
+            publicacion.fecha_creacion | date : "short"
+          }}</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Comentarios Recientes -->
+    <div class="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
+      <h3
+        class="text-xl font-bold text-kingfisher-daisy-600 dark:text-white mb-2"
+      >
+        Comentarios Recientes
+      </h3>
+      <ul class="space-y-2">
+        <li
+          *ngFor="let comentario of comentariosRecientes"
+          class="p-3 border-b border-gray-200 dark:border-gray-700"
+        >
+          <strong class="text-gray-800 dark:text-gray-200">{{
+            comentario.usuario.username
+          }}</strong
+          >: {{ comentario.comentario }}
+          <span class="text-gray-500 dark:text-gray-400">{{
+            comentario.fecha_comentario | date : "short"
+          }}</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</main>
