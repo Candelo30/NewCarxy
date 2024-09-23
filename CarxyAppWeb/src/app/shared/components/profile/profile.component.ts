@@ -7,16 +7,39 @@ import { LoadingButtonComponent } from '../loading-button/loading-button.compone
 import { PublicationsService } from '../../../core/services/publications.service';
 import { response } from 'express';
 import { CommonModule } from '@angular/common';
+import {
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [HeaderComponent, LoadingButtonComponent, CommonModule],
+  imports: [
+    HeaderComponent,
+    LoadingButtonComponent,
+    CommonModule,
+    FormsModule,
+    CommonModule,
+    ReactiveFormsModule,
+  ],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css',
 })
 export class ProfileComponent implements OnInit {
+  //
+
+  publicacionForm: FormGroup;
+  isModalOpen: boolean = false;
+  imagenPreview: string | ArrayBuffer | null = null;
+
+  //
+
   selectedColor: string = '';
+  idUser = 0;
   first_name = '';
   last_name = '';
   userName = '';
@@ -30,8 +53,72 @@ export class ProfileComponent implements OnInit {
   constructor(
     private UserData: UserService,
     private state: StatesService,
-    private PublicationData: PublicationsService
-  ) {}
+    private PublicationData: PublicationsService,
+    private fb: FormBuilder
+  ) {
+    this.publicacionForm = this.fb.group({
+      descripcion: ['', [Validators.required, Validators.maxLength(255)]],
+      imagen: [null],
+    });
+  }
+
+  openModal() {
+    this.isModalOpen = true;
+  }
+
+  closeModal() {
+    this.isModalOpen = false;
+    this.publicacionForm.reset();
+    this.imagenPreview = null;
+  }
+
+  onImageChange(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.imagenPreview = reader.result;
+      };
+      reader.readAsDataURL(file);
+      this.publicacionForm.patchValue({
+        imagen: file,
+      });
+    }
+  }
+
+  onSubmit() {
+    if (this.publicacionForm.valid) {
+      // Crear el objeto FormData
+      const formData = new FormData();
+
+      // Añadir la descripción al FormData
+      formData.append(
+        'descripcion',
+        this.publicacionForm.get('descripcion')?.value
+      );
+      formData.append('usuario', this.idUser.toLocaleString());
+      formData.append('megusta', '0');
+
+      // Añadir la imagen (si existe)
+      const imagen = this.publicacionForm.get('imagen')?.value;
+      if (imagen) {
+        formData.append('imagen', imagen);
+      }
+
+      // Enviar el FormData a través del servicio
+      this.PublicationData.postPublications(formData).subscribe({
+        next: (response) => {
+          console.log('Publicación creada con éxito', response);
+          this.closeModal(); // Cierra el modal si el post es exitoso
+          alert('Sus datos han sido enviados correctamente');
+          window.location.reload();
+        },
+        error: (err) => {
+          console.error('Error creando la publicación', err);
+        },
+      });
+    }
+  }
 
   ngOnInit(): void {
     this.state.getColor().subscribe((response) => {
@@ -58,6 +145,7 @@ export class ProfileComponent implements OnInit {
         const data = resources.userData; // Datos del usuario
 
         // Asignar los valores a las propiedades del componente
+        this.idUser = data.id;
         this.userName = data.username;
         this.first_name = data.first_name;
         this.last_name = data.last_name;
