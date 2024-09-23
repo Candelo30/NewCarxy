@@ -8,21 +8,27 @@ import { NoAuthGuard } from './auth/no-auth.guard';
 import { HelpComponent } from './shared/components/help/help.component';
 
 export const routes: Routes = [
-  { path: 'login', canActivate: [NoAuthGuard], component: LoginComponent }, // Ruta para el inicio de sesión
+  { path: 'login', component: LoginComponent, canActivate: [NoAuthGuard] }, // Ruta para el inicio de sesión
   {
     path: 'register',
-    canActivate: [NoAuthGuard],
     component: RegisterComponent,
+    canActivate: [NoAuthGuard],
   }, // Ruta para el registro
   {
     path: 'admin',
-    canActivate: [AuthGuard],
     loadChildren: () =>
       import('./admin/admin.module').then((m) => m.AdminModule),
+    canActivate: [AuthGuard], // Solo accesible para usuarios autenticados
   },
-  { path: 'help', component: HelpComponent, canActivate: [AuthGuard] },
-  { path: 'home', component: HomeComponent, canActivate: [AuthGuard] }, // Ruta para el inicio de sesión
-  { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] }, // Ruta para el inicio de sesión
-  { path: '', redirectTo: 'home', pathMatch: 'full' }, // Ruta predeterminada redirige a login
-  { path: '**', redirectTo: 'home' }, // En caso de rutas no encontradas, redirige al login
+  {
+    path: 'design',
+    loadChildren: () =>
+      import('./desings/desings.module').then((m) => m.DesingsModule),
+    canActivate: [AuthGuard], // Solo accesible para usuarios autenticados
+  },
+  { path: 'help', component: HelpComponent, canActivate: [AuthGuard] }, // Acceso restringido
+  { path: 'home', component: HomeComponent, canActivate: [AuthGuard] }, // Acceso restringido
+  { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] }, // Acceso restringido
+  { path: '', redirectTo: 'home', pathMatch: 'full' }, // Ruta predeterminada
+  { path: '**', redirectTo: 'home' }, // En caso de rutas no encontradas
 ];

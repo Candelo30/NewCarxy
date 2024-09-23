@@ -17,6 +17,10 @@ export class PublicationsService {
   DataPublications(): Observable<any> {
     return this.http.get('http://127.0.0.1:8000/api/publicaciones/');
   }
+
+  postPublications(data: FormData): Observable<any> {
+    return this.http.post('http://127.0.0.1:8000/api/publicaciones/', data);
+  }
   dataAllPublications(): Observable<any> {
     return this.http.get('http://127.0.0.1:8000/api/allPublication/');
   }

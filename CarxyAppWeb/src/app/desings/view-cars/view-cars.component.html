@@ -1,0 +1,186 @@
+<!-- Cabecera de diseño -->
+<header
+  class="flex justify-between items-center bg-gray-800 dark:bg-gray-900 text-white p-4"
+>
+  <div class="flex items-center space-x-4">
+    <div class="flex items-center font-bold text-lg space-x-1">
+      <span
+        class="text-xl font-semibold text-kingfisher-daisy-700 dark:text-kingfisher-daisy-300"
+      >
+        <a routerLink="/design/panel" class="cursor-pointer">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            fill="currentColor"
+            class="bi bi-arrow-left"
+            viewBox="0 0 16 16"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M11.3 1.3a1 1 0 0 1 0 1.4L5.4 8l5.9 5.3a1 1 0 0 1-1.4 1.4l-7-6.3a1 1 0 0 1 0-1.4l7-6.3a1 1 0 0 1 1.4 0z"
+            />
+          </svg>
+        </a>
+      </span>
+      <span>{{ titleCar }}</span>
+    </div>
+  </div>
+
+  <div class="flex items-center space-x-2">
+    <div
+      class="w-3 h-3 rounded-full"
+      [ngClass]="saveDesingStatus ? 'bg-kingfisher-daisy-500' : 'bg-red-500'"
+    ></div>
+    <span>{{ saveDesingStatus ? "Guardado" : "No guardado" }}</span>
+  </div>
+
+  <!-- Loading bar -->
+  <div *ngIf="loading" class="w-2/4 mt-2 h-1 bg-gray-300 dark:bg-gray-600">
+    <div
+      class="bg-kingfisher-daisy-500 h-full"
+      [style.width.%]="progress"
+    ></div>
+  </div>
+</header>
+
+<main
+  class="p-6 dark:bg-gray-800 dark:text-white overflow-auto w-full h-screen"
+  style="height: calc(100vh - 60px)"
+>
+  <div class="view-element flex flex-col items-center space-y-6">
+    <div class="wrapper-bg"></div>
+
+    <!-- Renderer container -->
+    <div
+      class="container-element--car w-full h-96 bg-gray-200 dark:bg-gray-700 rounded-lg shadow-md"
+      #rendererContainer
+    ></div>
+
+    <!-- Controls -->
+    <div class="grid grid-cols-3 gap-4">
+      <div>
+        <label for="rotationX" class="font-bold">Rotación X:</label>
+        <input
+          type="range"
+          id="rotationX"
+          min="-180"
+          max="180"
+          [(ngModel)]="rotationX"
+          (input)="updateTransform()"
+          class="w-full dark:bg-gray-600"
+        />
+      </div>
+      <div>
+        <label for="rotationY" class="font-bold">Rotación Y:</label>
+        <input
+          type="range"
+          id="rotationY"
+          min="-180"
+          max="180"
+          [(ngModel)]="rotationY"
+          (input)="updateTransform()"
+          class="w-full dark:bg-gray-600"
+        />
+      </div>
+      <div>
+        <label for="rotationZ" class="font-bold">Rotación Z:</label>
+        <input
+          type="range"
+          id="rotationZ"
+          min="-180"
+          max="180"
+          [(ngModel)]="rotationZ"
+          (input)="updateTransform()"
+          class="w-full dark:bg-gray-600"
+        />
+      </div>
+      <div>
+        <label for="positionX" class="font-bold">Posición X:</label>
+        <input
+          type="range"
+          id="positionX"
+          min="-50"
+          max="50"
+          [(ngModel)]="positionX"
+          (input)="updateTransform()"
+          class="w-full dark:bg-gray-600"
+        />
+      </div>
+      <div>
+        <label for="positionY" class="font-bold">Posición Y:</label>
+        <input
+          type="range"
+          id="positionY"
+          min="-50"
+          max="50"
+          [(ngModel)]="positionY"
+          (input)="updateTransform()"
+          class="w-full dark:bg-gray-600"
+        />
+      </div>
+      <div>
+        <label for="positionZ" class="font-bold">Posición Z:</label>
+        <input
+          type="range"
+          id="positionZ"
+          min="-50"
+          max="50"
+          [(ngModel)]="positionZ"
+          (input)="updateTransform()"
+          class="w-full dark:bg-gray-600"
+        />
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div
+    class="container-panel__footer mt-10 p-6 bg-gray-100 dark:bg-gray-700 border-t border-gray-300 dark:border-gray-600 flex justify-between"
+  >
+    <div class="container-colors flex flex-col space-y-4">
+      <span class="text-lg font-semibold">Colores</span>
+      <div class="flex space-x-2">
+        <div
+          *ngFor="let item of colorList"
+          class="w-8 h-8 rounded-full cursor-pointer border"
+          [style.backgroundColor]="item.hex"
+          (click)="changeModelColor(item.hex)"
+        ></div>
+      </div>
+    </div>
+
+    <!-- Panel icons -->
+    <div class="panel-desing__icons flex space-x-4 items-center">
+      <button
+        class="bg-kingfisher-daisy-500 text-white px-4 py-2 rounded-lg dark:bg-kingfisher-daisy-600"
+      >
+        Restablecer Color
+      </button>
+      <button
+        (click)="resetCamera()"
+        class="bg-kingfisher-daisy-500 text-white px-4 py-2 rounded-lg dark:bg-kingfisher-daisy-600"
+      >
+        Restablecer Cámara
+      </button>
+      <i
+        class="fa-regular fa-floppy-disk text-xl cursor-pointer"
+        (click)="saveDesingStatus = !saveDesingStatus"
+      ></i>
+      <i class="fa-solid fa-download text-xl cursor-pointer"></i>
+    </div>
+  </div>
+
+  <!-- List of parts -->
+  <div class="elements-separate mt-8">
+    <ul class="space-y-2">
+      <li
+        *ngFor="let itemsCars of parts"
+        (click)="onPartClick(itemsCars)"
+        class="bg-white dark:bg-gray-700 p-3 rounded-lg shadow hover:bg-gray-200 dark:hover:bg-gray-600 cursor-pointer"
+      >
+        {{ itemsCars.name }}
+      </li>
+    </ul>
+  </div>
+</main>
