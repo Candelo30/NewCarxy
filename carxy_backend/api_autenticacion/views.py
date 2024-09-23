@@ -1,3 +1,4 @@
+from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework import viewsets
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import api_view, permission_classes, action
@@ -10,6 +11,11 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.authentication import TokenAuthentication
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.generics import (
+    ListCreateAPIView,
+    RetrieveUpdateDestroyAPIView,
+    RetrieveAPIView,
+)
 
 from .serializers import *
 from .models import *
@@ -50,11 +56,14 @@ def iniciarSesion(request):
 def registro(request):
     serializer = UsuariosSerializers(data=request.data)
     if serializer.is_valid():
-        serializer.save()
-        user = Usuarios.objects.get(username=serializer.data["username"])
-        user.set_password(serializer.data["password"])
+        # Guardar el usuario con la contraseña encriptada
+        user = serializer.save()
+        user.set_password(request.data["password"])  # Encripta la contraseña
         user.save()
+
+        # Crear el token para el usuario
         token = Token.objects.create(user=user)
+
         return Response(
             {"token": token.key, "user": serializer.data},
             status=status.HTTP_201_CREATED,
@@ -139,85 +148,186 @@ def eliminar_comentario(request, pk):
 
 
 # Modelos
-@api_view(["GET", "POST"])
-@permission_classes([IsAuthenticated])
-def lista_modelos(request):
-    if request.method == "GET":
-        modelos = Modelo3D.objects.all()
-        serializer = Modelo3DSerializer(modelos, many=True)
-        return Response(serializer.data)
+class ListaModelos3D(ListCreateAPIView):
+    queryset = Modelo3D.objects.all()
+    serializer_class = Modelo3DSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
 
-    if request.method == "POST":
+    def post(self, request, *args, **kwargs):
         if not request.user.is_staff:
             return Response(
                 {"error": "Solo los administradores pueden agregar modelos"},
                 status=status.HTTP_403_FORBIDDEN,
             )
-        serializer = Modelo3DSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        request.data["usuario"] = request.user.id  # Asignar el usuario autenticado
+        return super().post(request, *args, **kwargs)
 
 
-@api_view(["PUT", "DELETE"])
-@permission_classes([IsAuthenticated])
-def modificar_eliminar_modelo(request, pk):
-    modelo = get_object_or_404(Modelo3D, pk=pk)
+class ModificarEliminarModelo(RetrieveUpdateDestroyAPIView):
+    queryset = Modelo3D.objects.all()
+    serializer_class = Modelo3DSerializer
+    permission_classes = [IsAuthenticated]
 
-    if request.method == "PUT":
-        # Solo los administradores pueden modificar el modelo completo
+    def put(self, request, *args, **kwargs):
+        # Verificar si el usuario es administrador
         if not request.user.is_staff:
             return Response(
                 {"error": "No tienes permiso para editar este modelo"},
                 status=status.HTTP_403_FORBIDDEN,
             )
-        serializer = Modelo3DSerializer(modelo, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return super().put(request, *args, **kwargs)
 
-    if request.method == "DELETE":
+    def delete(self, request, *args, **kwargs):
+        # Verificar si el usuario es administrador
         if not request.user.is_staff:
             return Response(
                 {"error": "No tienes permiso para eliminar este modelo"},
                 status=status.HTTP_403_FORBIDDEN,
             )
-        modelo.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return super().delete(request, *args, **kwargs)
 
 
-# Personalización de partes
-@api_view(["POST"])
-@permission_classes([IsAuthenticated])
-def personalizar_parte(request, pk):
-    parte = get_object_or_404(Parte, pk=pk)
+# ____________________________________________________________________
+# Lista y creación de personalizaciones
+class ListaCrearPersonalizacion(ListCreateAPIView):
+    serializer_class = PersonalizacionSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
 
-    # Verificar que la parte pertenezca al usuario
-    if parte.usuario != request.user:
+    def get_queryset(self):
+        # Devuelve solo las personalizaciones del usuario autenticado
+        return Personalizacion.objects.filter(usuario=self.request.user)
+
+    def perform_create(self, serializer):
+        # Asigna el usuario autenticado a la personalización
+        serializer.save(usuario=self.request.user)
+
+
+class RetrievePersonalizacion(RetrieveAPIView):
+    serializer_class = PersonalizacionSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Asegurarse de que solo devuelve personalizaciones del usuario autenticado
+        return Personalizacion.objects.filter(usuario=self.request.user)
+
+
+class ModificarEliminarPersonalizacion(RetrieveUpdateDestroyAPIView):
+    serializer_class = PersonalizacionSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Devuelve solo las personalizaciones del usuario autenticado
+        return Personalizacion.objects.filter(usuario=self.request.user)
+
+    def put(self, request, *args, **kwargs):
+        # Verificar si el usuario es el propietario de la personalización
+        personalizacion = self.get_object()
+        if personalizacion.usuario != request.user:
+            return Response(
+                {"error": "No tienes permiso para modificar esta personalización"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        return super().put(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        # Verificar si el usuario es el propietario de la personalización
+        personalizacion = self.get_object()
+        if personalizacion.usuario != request.user:
+            return Response(
+                {"error": "No tienes permiso para eliminar esta personalización"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        return super().delete(request, *args, **kwargs)
+
+
+class PersonalizarParte(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        parte = get_object_or_404(Parte, pk=pk)
+
+        # Verificar que la parte pertenezca al usuario
+        if parte.usuario != request.user:
+            return Response(
+                {"error": "No tienes permiso para personalizar esta parte."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        # Cambiar el color de la parte
+        color = request.data.get("color")
+        if color:
+            parte.color = color
+        else:
+            return Response(
+                {"error": "El color es obligatorio."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Verificar si ya existe una personalización
+        if parte.personalizacion is None:
+            personalizacion = Personalizacion.objects.create(
+                nombre_personalizacion=f"Personalización de {parte.nombre_parte}",
+                fecha_creacion=request.data.get("fecha_creacion"),
+                usuario=request.user,
+                modelo=parte.modelo,
+            )
+            parte.personalizacion = personalizacion
+
+        parte.save()
+
         return Response(
-            {"error": "No tienes permiso para personalizar esta parte."},
-            status=status.HTTP_403_FORBIDDEN,
+            {
+                "message": "Parte personalizada con éxito",
+                "personalizacion": parte.personalizacion.id,
+            },
+            status=status.HTTP_200_OK,
         )
 
-    # Cambiar el color de la parte
-    color = request.data.get("color")
-    parte.color = color
-    parte.save()
 
-    # Guardar la personalización
-    personalizacion = Personalizacion.objects.create(
-        nombre_personalizacion=f"Personalización de {parte.nombre_parte}",
-        fecha_creacion=request.data.get("fecha_creacion"),
-        usuario=request.user,
-        modelo=parte.modelo,
-    )
+# Lista y creación de partes
+class ListaCrearParte(ListCreateAPIView):
+    serializer_class = ParteSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
 
-    return Response(
-        {
-            "message": "Parte personalizada con éxito",
-            "personalizacion": personalizacion.id,
-        },
-        status=status.HTTP_200_OK,
-    )
+    def get_queryset(self):
+        # Devuelve solo las partes del usuario autenticado
+        return Parte.objects.filter(usuario=self.request.user)
+
+    def perform_create(self, serializer):
+        # Asigna el usuario autenticado a la parte
+        serializer.save(usuario=self.request.user)
+
+
+class ModificarEliminarParte(RetrieveUpdateDestroyAPIView):
+    serializer_class = ParteSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Devuelve solo las partes del usuario autenticado
+        return Parte.objects.filter(usuario=self.request.user)
+
+    def put(self, request, *args, **kwargs):
+        parte = self.get_object()
+        if parte.usuario != request.user:
+            return Response(
+                {"error": "No tienes permiso para modificar esta parte"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        return super().put(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        parte = self.get_object()
+        if parte.usuario != request.user:
+            return Response(
+                {"error": "No tienes permiso para eliminar esta parte"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        return super().delete(request, *args, **kwargs)
