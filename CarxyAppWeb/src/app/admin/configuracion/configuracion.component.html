@@ -1,1 +1,167 @@
-<p>configuracion works!</p>
+<app-header></app-header>
+
+<main
+  class="px-4 mt-4 w-full h-screen overflow-auto"
+  style="height: calc(100vh - 96px)"
+>
+  <div
+    class="admin-dashboard p-6 bg-gray-100 dark:bg-gray-900 min-h-screen transition-colors"
+  >
+    <!-- Título principal -->
+    <h1
+      class="text-3xl font-bold mb-6 text-kingfisher-daisy-600 dark:text-white"
+    >
+      Configuración
+    </h1>
+
+    <!-- Navegación entre secciones -->
+    <div class="mb-6 space-x-2 flex">
+      <a
+        routerLink="/admin/"
+        class="inline-flex items-center px-4 py-2 bg-kingfisher-daisy-600 text-white rounded-md shadow-md hover:bg-kingfisher-daisy-500 transition duration-200"
+      >
+        Dashboard
+      </a>
+      <a
+        routerLink="/admin/usuarios"
+        class="inline-flex items-center px-4 py-2 bg-kingfisher-daisy-600 text-white rounded-md shadow-md hover:bg-kingfisher-daisy-500 transition duration-200"
+      >
+        Gestionar Usuarios
+      </a>
+      <a
+        routerLink="/admin/configuracion"
+        class="inline-flex items-center px-4 py-2 bg-kingfisher-daisy-600 text-white rounded-md shadow-md hover:bg-kingfisher-daisy-500 transition duration-200"
+      >
+        Configuraciones
+      </a>
+    </div>
+
+    <!-- Formulario para subir modelos 3D -->
+    <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg space-y-6">
+      <h2
+        class="text-2xl font-semibold mb-4 text-kingfisher-daisy-600 dark:text-white"
+      >
+        Subir Modelo 3D
+      </h2>
+
+      <!-- Nombre del modelo -->
+      <form [formGroup]="modeloForm" (ngSubmit)="onSubmit()" class="space-y-6">
+        <div class="space-y-2">
+          <label
+            for="nombre_modelo"
+            class="block text-lg text-gray-700 dark:text-gray-300 font-semibold"
+          >
+            Nombre del Modelo
+          </label>
+          <input
+            id="nombre_modelo"
+            formControlName="nombre_modelo"
+            type="text"
+            class="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-200"
+            placeholder="Escribe el nombre del modelo"
+          />
+          <div
+            *ngIf="
+              modeloForm.get('nombre_modelo')?.invalid &&
+              modeloForm.get('nombre_modelo')?.touched
+            "
+            class="text-red-500 text-sm mt-1"
+          >
+            El nombre del modelo es requerido
+          </div>
+        </div>
+
+        <!-- Selección de archivo del modelo -->
+        <div class="space-y-2">
+          <label
+            for="archivo_modelo"
+            class="block text-lg text-gray-700 dark:text-gray-300 font-semibold"
+          >
+            Archivo del Modelo (.glb, .gltf)
+          </label>
+          <input
+            id="archivo_modelo"
+            type="file"
+            (change)="onFileSelected($event)"
+            class="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-200"
+          />
+          <div
+            *ngIf="
+              modeloForm.get('archivo_modelo')?.invalid &&
+              modeloForm.get('archivo_modelo')?.touched
+            "
+            class="text-red-500 text-sm mt-1"
+          >
+            El archivo del modelo es requerido
+          </div>
+        </div>
+
+        <!-- Botón de subida -->
+        <button
+          type="submit"
+          class="bg-blue-500 text-white font-semibold py-3 px-6 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+          [disabled]="modeloForm.invalid"
+        >
+          Subir Modelo
+        </button>
+      </form>
+
+      <!-- Indicador de progreso -->
+      <div *ngIf="loading" class="flex items-center justify-center mt-4">
+        <svg
+          class="animate-spin h-5 w-5 text-blue-500 mr-3"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          ></circle>
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+          ></path>
+        </svg>
+        <span class="text-lg font-semibold text-blue-500">Cargando...</span>
+      </div>
+
+      <!-- Vista previa del modelo -->
+      <h3
+        class="text-lg font-semibold mt-6 text-kingfisher-daisy-600 dark:text-white"
+      >
+        Vista Previa del Modelo
+      </h3>
+
+      <!-- Contenedor del renderizado -->
+      <div
+        class="container-element--car w-full h-96 bg-gray-200 dark:bg-gray-700 rounded-lg shadow-md flex justify-center items-center relative"
+        #rendererContainer
+      >
+        <!-- Mensaje para indicar que no hay vista previa -->
+        <span
+          *ngIf="!selectedFile && !loading"
+          class="text-gray-500 dark:text-gray-300 text-sm"
+        >
+          Selecciona un archivo para ver la vista previa aquí
+        </span>
+
+        <!-- Loading bar -->
+        <div
+          *ngIf="loading"
+          class="absolute bottom-4 w-3/4 h-1 bg-gray-300 dark:bg-gray-600 rounded-md overflow-hidden"
+        >
+          <div
+            class="bg-kingfisher-daisy-500 h-full transition-all duration-300 ease-in-out"
+            [style.width.%]="progress"
+          ></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
