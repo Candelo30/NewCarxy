@@ -26,9 +26,9 @@ export const routes: Routes = [
       import('./desings/desings.module').then((m) => m.DesingsModule),
     canActivate: [AuthGuard], // Solo accesible para usuarios autenticados
   },
-  { path: 'help', component: HelpComponent, canActivate: [AuthGuard] }, // Acceso restringido
   { path: 'home', component: HomeComponent, canActivate: [AuthGuard] }, // Acceso restringido
+  { path: 'help', component: HelpComponent, canActivate: [AuthGuard] }, // Acceso restringido
   { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] }, // Acceso restringido
-  { path: '', redirectTo: 'home', pathMatch: 'full' }, // Ruta predeterminada
-  { path: '**', redirectTo: 'home' }, // En caso de rutas no encontradas
+  { path: '', redirectTo: '/home', pathMatch: 'full' }, // Ruta predeterminada
+  { path: '**', redirectTo: '/home' }, // En caso de rutas no encontradas
 ];
