@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../auth.service';
+import { CookieService } from 'ngx-cookie-service';
 
 @Component({
   selector: 'app-register',
@@ -16,8 +17,18 @@ export class RegisterComponent {
   username: string = '';
   email: string = '';
   password: string = '';
+  validateToken = '';
 
-  constructor(public userService: AuthService, public router: Router) {}
+  constructor(
+    public userService: AuthService,
+    public router: Router,
+    private cookieService: CookieService
+  ) {}
+
+  ngOnInit(): void {
+    // Obtener el token desde las cookies
+    this.validateToken = this.cookieService.get('token');
+  }
 
   Registro() {
     const formData = new FormData();
