@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class PersonalizacionService {
-  private apiUrl = 'http://localhost:8000'; // URL de la API
+  private apiUrl = 'http://localhost:8000/api'; // URL de la API
 
   constructor(private http: HttpClient) {}
 
@@ -21,8 +21,8 @@ export class PersonalizacionService {
   }
 
   // Obtener la lista de personalizaciones (GET)
-  getPersonalizaciones(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/personalizaciones/`);
+  getPersonalizaciones(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/personalizaciones/`);
   }
 
   // Obtener la lista de personalizaciones (GET)
