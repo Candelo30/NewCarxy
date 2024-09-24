@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class Modelo3dService {
-  private apiUrl = 'http://localhost:8000/modelos/'; // URL de tu API de Django
+  private apiUrl = 'http://localhost:8000/api/modelos3d/'; // URL de tu API de Django
 
   constructor(private http: HttpClient) {}
 
