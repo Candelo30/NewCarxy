@@ -11,5 +11,9 @@ router.register(
     r"allPublication", PublicacionPublicaViewSet, basename="Allpublications"
 )
 
+router.register(r"modelos3d", Modelo3DViewSet)
+router.register(r"personalizaciones", PersonalizacionViewSet)
+router.register(r"partes", ParteViewSet)
+
 
 urlpatterns = router.urls
