@@ -32,7 +32,7 @@ export class PersonalizacionService {
 
   // Crear una nueva personalización (POST)
   crearPersonalizacion(data: any): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}`, data);
+    return this.http.post<any>(`${this.apiUrl}/personalizaciones/`, data);
   }
 
   // Modificar una personalización existente (PUT)
