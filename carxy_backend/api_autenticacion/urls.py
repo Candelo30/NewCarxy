@@ -12,7 +12,9 @@ router.register(
 )
 
 router.register(r"modelos3d", Modelo3DViewSet)
-router.register(r"personalizaciones", PersonalizacionViewSet)
+router.register(
+    r"personalizaciones", PersonalizacionViewSet, basename="Personalizaciones"
+)
 router.register(r"partes", ParteViewSet)
 
 

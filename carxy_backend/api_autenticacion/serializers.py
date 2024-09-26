@@ -2,49 +2,47 @@ from rest_framework import serializers
 from .models import *
 
 
-class UsuariosSerializers(serializers.ModelSerializer):
-    foto_perfil = (
-        serializers.SerializerMethodField()
-    )  # Usamos SerializerMethodField para la URL completa
-
+class UsuariosSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuarios
-        fields = "__all__"
+        fields = (
+            "id",
+            "foto_perfil",
+            "first_name",
+            "last_name",
+            "username",
+            "email",
+            "password",
+            "is_staff",
+        )
         extra_kwargs = {
+            "password": {
+                "write_only": True
+            },  # Asegura que la contraseña no se muestre en la respuesta
             "is_staff": {"read_only": False},
         }
 
-    def get_foto_perfil(self, obj):
-        request = self.context.get(
-            "request", None
-        )  # Evitar el AttributeError si request es None
-        foto_perfil = (
-            obj.foto_perfil
-        )  # Asumiendo que tienes un campo 'foto_perfil' en el modelo Usuarios
-        if foto_perfil:
-            if request:
-                return request.build_absolute_uri(
-                    foto_perfil.url
-                )  # Retorna la URL completa si request existe
-            return foto_perfil.url  # Retorna la URL relativa si no hay request
-        return None
-
     def create(self, validated_data):
+        # Crear el usuario de manera segura usando el método create_user
         user = Usuarios.objects.create_user(
-            username=validated_data["username"], password=validated_data["password"]
+            username=validated_data["username"],
+            email=validated_data["email"],
+            password=validated_data["password"],  # El create_user cifrará la contraseña
+            first_name=validated_data.get("first_name", ""),
+            last_name=validated_data.get("last_name", ""),
         )
+
+        # Si se incluye el campo is_staff, se asigna
         if "is_staff" in validated_data:
             user.is_staff = validated_data["is_staff"]
             user.save()
+
         return user
 
 
 class PublicacionSerializer(serializers.ModelSerializer):
-    # Traemos solo el 'username' y la 'foto_perfil' del usuario, usando 'source'
     usuario_username = serializers.CharField(source="usuario.username", read_only=True)
     usuario_foto = serializers.SerializerMethodField()
-
-    # Traemos solo los comentarios y mostramos el nombre del usuario y el comentario
     comentarios = serializers.SerializerMethodField()
 
     class Meta:
@@ -53,13 +51,11 @@ class PublicacionSerializer(serializers.ModelSerializer):
 
     def get_usuario_foto(self, obj):
         request = self.context.get("request")
-        foto_perfil = obj.usuario.foto_perfil
-        if foto_perfil:
-            return request.build_absolute_uri(foto_perfil.url)
+        if obj.usuario.foto_perfil:
+            return request.build_absolute_uri(obj.usuario.foto_perfil.url)
         return None
 
     def get_comentarios(self, obj):
-        # Solo traemos el 'username' y el texto del comentario
         comentarios = obj.comentarios.all()
         return [
             {
@@ -73,63 +69,67 @@ class PublicacionSerializer(serializers.ModelSerializer):
 
     def get_comentario_foto(self, comentario):
         request = self.context.get("request")
-        foto_perfil = comentario.usuario.foto_perfil
-        if foto_perfil:
-            return request.build_absolute_uri(foto_perfil.url)
+        if comentario.usuario.foto_perfil:
+            return request.build_absolute_uri(comentario.usuario.foto_perfil.url)
         return None
 
 
-# Serializador para Comentarios
 class ComentarioSerializer(serializers.ModelSerializer):
-    usuario = UsuariosSerializers(
-        read_only=True
-    )  # Incluye la info del usuario que hizo el comentario
-    publicacion = serializers.PrimaryKeyRelatedField(
-        queryset=Publicacion.objects.all()
-    )  # Publicación a la que pertenece el comentario
+    usuario = UsuariosSerializer(read_only=True)
+    publicacion = serializers.PrimaryKeyRelatedField(queryset=Publicacion.objects.all())
 
     class Meta:
         model = Comentario
         fields = "__all__"
 
 
-# Serializador para el modelo 3D (Auto)
 class Modelo3DSerializer(serializers.ModelSerializer):
-    usuario = UsuariosSerializers(
+    usuario = UsuariosSerializer(
         read_only=True
-    )  # Incluye la info del usuario pero no permite edición
+    )  # Añadir usuario como serializador anidado
 
     class Meta:
         model = Modelo3D
-        fields = "__all__"
+        fields = ["id", "nombre_modelo", "fecha_creacion", "usuario", "archivo_modelo"]
+
+    def validate_archivo_modelo(self, value):
+        if not value.name.endswith(".glb"):
+            raise serializers.ValidationError(
+                "El archivo debe ser un modelo en formato .glb"
+            )
+        return value
 
 
-# Serializador para Personalización
 class PersonalizacionSerializer(serializers.ModelSerializer):
-    usuario = UsuariosSerializers(
-        read_only=True
-    )  # Muestra info del usuario sin permitir edición
-    modelo = Modelo3DSerializer(
-        read_only=True
-    )  # Muestra info del modelo sin permitir edición
+    modelo = Modelo3DSerializer(read_only=True)
+    modelo_id = serializers.PrimaryKeyRelatedField(
+        queryset=Modelo3D.objects.all(),  # Asegúrate de importar el modelo correcto
+        source="modelo",  # Esto permite que 'modelo_id' mapee a 'modelo'
+        write_only=True,  # Solo se puede escribir, no se puede leer
+    )
+    usuario = UsuariosSerializer(read_only=True)
 
     class Meta:
         model = Personalizacion
-        fields = ["id", "nombre_personalizacion", "fecha_creacion", "usuario", "modelo"]
+        fields = [
+            "id",
+            "nombre_personalizacion",
+            "fecha_creacion",
+            "usuario",
+            "modelo",
+            "modelo_id",
+        ]
 
 
-# Serializador para Partes de Auto
 class ParteSerializer(serializers.ModelSerializer):
-    usuario = UsuariosSerializers(
-        read_only=True
-    )  # Muestra info del usuario sin permitir edición
     modelo = Modelo3DSerializer(
         read_only=True
-    )  # Muestra info del modelo sin permitir edición
+    )  # Añadir modelo como serializador anidado
     personalizacion = PersonalizacionSerializer(
         read_only=True
-    )  # Muestra la personalización sin permitir edición
+    )  # Añadir personalizacion como serializador anidado
+    usuario = UsuariosSerializer(read_only=True)
 
     class Meta:
         model = Parte
-        fields = "__all__"
+        fields = ["id", "nombre_parte", "color", "modelo", "personalizacion", "usuario"]

@@ -2,9 +2,9 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 
-# Create your models here.
 class Usuarios(AbstractUser):
     foto_perfil = models.ImageField(upload_to="img/", null=True, blank=True)
+    email = models.EmailField(unique=True)  # Email único y obligatorio
 
 
 # _______________________________
@@ -19,7 +19,7 @@ class Publicacion(models.Model):
     descripcion = models.TextField()
     megusta = models.IntegerField(default=0)
 
-    def _str_(self):
+    def __str__(self):
         return f"Publicación: {self.descripcion} por {self.usuario.username}"
 
 
@@ -33,24 +33,27 @@ class Comentario(models.Model):
     comentario = models.TextField()
     fecha_comentario = models.DateTimeField(auto_now_add=True)
 
-    def _str_(self):
-        return f"Comentario de {self.usuario.username} en {self.publicacion.titulo}"
+    def __str__(self):
+        return f"Comentario de {self.usuario.username} en {self.publicacion}"
 
 
 class Modelo3D(models.Model):
     nombre_modelo = models.CharField(max_length=100)
-    fecha_creacion = models.DateField()
+    fecha_creacion = models.DateField(auto_now_add=True)
     usuario = models.ForeignKey(
         Usuarios, on_delete=models.CASCADE, related_name="modelos_3d"
     )
+    archivo_modelo = models.FileField(upload_to="modelos_3d/")
 
-    def _str_(self):
+    def __str__(self):
         return self.nombre_modelo
 
 
 class Personalizacion(models.Model):
     nombre_personalizacion = models.CharField(max_length=100)
-    fecha_creacion = models.DateField()
+    fecha_creacion = models.DateField(
+        auto_now_add=True
+    )  # Consistente con otros modelos
     usuario = models.ForeignKey(
         Usuarios, on_delete=models.CASCADE, related_name="personalizaciones"
     )
@@ -58,7 +61,7 @@ class Personalizacion(models.Model):
         Modelo3D, on_delete=models.CASCADE, related_name="personalizaciones"
     )
 
-    def _str_(self):
+    def __str__(self):
         return f"{self.nombre_personalizacion} - {self.modelo.nombre_modelo}"
 
 
@@ -75,7 +78,7 @@ class Parte(models.Model):
         Usuarios, on_delete=models.CASCADE, related_name="partes"
     )
 
-    def _str_(self):
+    def __str__(self):
         return (
             f"{self.nombre_parte} ({self.color}) del modelo {self.modelo.nombre_modelo}"
         )

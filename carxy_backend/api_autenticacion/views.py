@@ -1,33 +1,35 @@
-from rest_framework.generics import RetrieveUpdateDestroyAPIView
-from rest_framework import viewsets
+# Django and Python imports
+from django.shortcuts import render, get_object_or_404
+from warnings import filters
+
+# Rest Framework imports
+from rest_framework import viewsets, status
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.decorators import api_view, permission_classes, action
-from rest_framework.views import APIView
-from rest_framework import status
-from rest_framework.response import Response
-from rest_framework.authtoken.models import Token
-from rest_framework.decorators import authentication_classes, permission_classes
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.authentication import TokenAuthentication
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.decorators import (
+    api_view,
+    permission_classes,
+    action,
+    authentication_classes,
+)
 from rest_framework.generics import (
     ListCreateAPIView,
     RetrieveUpdateDestroyAPIView,
     RetrieveAPIView,
 )
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.authtoken.models import Token
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
+from rest_framework.authentication import TokenAuthentication
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework.parsers import MultiPartParser, FormParser
 
-from .serializers import *
+
+# Local imports (models and serializers)
 from .models import *
-
-from django.shortcuts import render
-from warnings import filters
-
-from django.shortcuts import get_object_or_404
-from .models import Usuarios
+from .serializers import *
 
 
-# Create your views here.
 class MyTokenObtainPairView(TokenObtainPairView):
     pass
 
@@ -45,7 +47,7 @@ def iniciarSesion(request):
             {"error": "Invalid password"}, status=status.HTTP_400_BAD_REQUEST
         )
     token, created = Token.objects.get_or_create(user=user)
-    serializer = UsuariosSerializers(instance=user)
+    serializer = UsuariosSerializer(instance=user)
     return Response(
         {"token": token.key, "user": serializer.data}, status=status.HTTP_200_OK
     )
@@ -54,14 +56,12 @@ def iniciarSesion(request):
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def registro(request):
-    serializer = UsuariosSerializers(data=request.data)
+    serializer = UsuariosSerializer(data=request.data)
     if serializer.is_valid():
-        # Guardar el usuario con la contraseña encriptada
+        # Utilizar el método save del serializador para crear el usuario de forma segura
         user = serializer.save()
-        user.set_password(request.data["password"])  # Encripta la contraseña
-        user.save()
 
-        # Crear el token para el usuario
+        # Crear el token para el usuario registrado
         token = Token.objects.create(user=user)
 
         return Response(
@@ -71,24 +71,36 @@ def registro(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# Vistas
-#  _________________________________________________
-# Vista para obtener, actualizar y eliminar un usuario
-class UsuarioViewSet(viewsets.ModelViewSet):
-    queryset = Usuarios.objects.all()
-    serializer_class = UsuariosSerializers
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAdminUser]
-
-
 class PerfilView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        # Obtenemos los datos del usuario autenticado
-        serializer = UsuariosSerializers(instance=request.user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        try:
+            # Obtenemos los datos del usuario autenticado
+            serializer = UsuariosSerializer(instance=request.user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {"error": f"Ocurrió un error: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
+class UsuarioViewSet(viewsets.ModelViewSet):
+    queryset = Usuarios.objects.all()
+    serializer_class = UsuariosSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAdminUser]
+
+    def list(self, request, *args, **kwargs):
+        try:
+            return super().list(request, *args, **kwargs)
+        except Exception as e:
+            return Response(
+                {"error": f"Ocurrió un error: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
 # ______________________________
@@ -103,231 +115,120 @@ class PublicacionPublicaViewSet(viewsets.ReadOnlyModelViewSet):
     authentication_classes = [TokenAuthentication]
     permission_classes = [AllowAny]
 
+    def list(self, request, *args, **kwargs):
+        try:
+            return super().list(request, *args, **kwargs)
+        except Exception as e:
+            return Response(
+                {"error": f"Ocurrió un error al obtener las publicaciones: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
-# ViewSet para que los usuarios manejen solo sus publicaciones
+
 class PublicacionUsuarioViewSet(viewsets.ModelViewSet):
     serializer_class = PublicacionSerializer
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # Los usuarios normales solo ven sus propias publicaciones
-        return Publicacion.objects.filter(usuario=self.request.user)
+        try:
+            # Los usuarios normales solo ven sus propias publicaciones
+            return Publicacion.objects.filter(usuario=self.request.user)
+        except Exception as e:
+            return Response(
+                {
+                    "error": f"Ocurrió un error al obtener las publicaciones del usuario: {str(e)}"
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+    def perform_create(self, serializer):
+        try:
+            # Asigna el usuario autenticado a la publicación
+            serializer.save(usuario=self.request.user)
+        except Exception as e:
+            return Response(
+                {"error": f"Ocurrió un error al crear la publicación: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
-# Comentarios
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def lista_comentarios(request):
-    if request.method == "GET":
-        comentarios = Comentario.objects.all()
-        serializer = ComentarioSerializer(comentarios, many=True)
-        return Response(serializer.data)
+    try:
+        if request.method == "GET":
+            # Listar todos los comentarios
+            comentarios = Comentario.objects.all()
+            serializer = ComentarioSerializer(comentarios, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
-    if request.method == "POST":
-        serializer = ComentarioSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(usuario=request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if request.method == "POST":
+            # Crear un nuevo comentario
+            serializer = ComentarioSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save(usuario=request.user)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response(
+            {"error": f"Ocurrió un error al procesar los comentarios: {str(e)}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
 
 
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
 def eliminar_comentario(request, pk):
-    comentario = get_object_or_404(Comentario, pk=pk)
+    try:
+        comentario = get_object_or_404(Comentario, pk=pk)
 
-    # Permitir que solo el usuario propietario o un administrador elimine el comentario
-    if request.user == comentario.usuario or request.user.is_staff:
-        comentario.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-    return Response(
-        {"error": "No tienes permiso para eliminar este comentario"},
-        status=status.HTTP_403_FORBIDDEN,
-    )
-
-
-# Modelos
-class ListaModelos3D(ListCreateAPIView):
-    queryset = Modelo3D.objects.all()
-    serializer_class = Modelo3DSerializer
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, *args, **kwargs):
-        if not request.user.is_staff:
-            return Response(
-                {"error": "Solo los administradores pueden agregar modelos"},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
-        request.data["usuario"] = request.user.id  # Asignar el usuario autenticado
-        return super().post(request, *args, **kwargs)
-
-
-class ModificarEliminarModelo(RetrieveUpdateDestroyAPIView):
-    queryset = Modelo3D.objects.all()
-    serializer_class = Modelo3DSerializer
-    permission_classes = [IsAuthenticated]
-
-    def put(self, request, *args, **kwargs):
-        # Verificar si el usuario es administrador
-        if not request.user.is_staff:
-            return Response(
-                {"error": "No tienes permiso para editar este modelo"},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-        return super().put(request, *args, **kwargs)
-
-    def delete(self, request, *args, **kwargs):
-        # Verificar si el usuario es administrador
-        if not request.user.is_staff:
-            return Response(
-                {"error": "No tienes permiso para eliminar este modelo"},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-        return super().delete(request, *args, **kwargs)
-
-
-# ____________________________________________________________________
-# Lista y creación de personalizaciones
-class ListaCrearPersonalizacion(ListCreateAPIView):
-    serializer_class = PersonalizacionSerializer
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        # Devuelve solo las personalizaciones del usuario autenticado
-        return Personalizacion.objects.filter(usuario=self.request.user)
-
-    def perform_create(self, serializer):
-        # Asigna el usuario autenticado a la personalización
-        serializer.save(usuario=self.request.user)
-
-
-class RetrievePersonalizacion(RetrieveAPIView):
-    serializer_class = PersonalizacionSerializer
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        # Asegurarse de que solo devuelve personalizaciones del usuario autenticado
-        return Personalizacion.objects.filter(usuario=self.request.user)
-
-
-class ModificarEliminarPersonalizacion(RetrieveUpdateDestroyAPIView):
-    serializer_class = PersonalizacionSerializer
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        # Devuelve solo las personalizaciones del usuario autenticado
-        return Personalizacion.objects.filter(usuario=self.request.user)
-
-    def put(self, request, *args, **kwargs):
-        # Verificar si el usuario es el propietario de la personalización
-        personalizacion = self.get_object()
-        if personalizacion.usuario != request.user:
-            return Response(
-                {"error": "No tienes permiso para modificar esta personalización"},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-        return super().put(request, *args, **kwargs)
-
-    def delete(self, request, *args, **kwargs):
-        # Verificar si el usuario es el propietario de la personalización
-        personalizacion = self.get_object()
-        if personalizacion.usuario != request.user:
-            return Response(
-                {"error": "No tienes permiso para eliminar esta personalización"},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-        return super().delete(request, *args, **kwargs)
-
-
-class PersonalizarParte(APIView):
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, pk):
-        parte = get_object_or_404(Parte, pk=pk)
-
-        # Verificar que la parte pertenezca al usuario
-        if parte.usuario != request.user:
-            return Response(
-                {"error": "No tienes permiso para personalizar esta parte."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
-        # Cambiar el color de la parte
-        color = request.data.get("color")
-        if color:
-            parte.color = color
+        # Permitir que solo el usuario propietario o un administrador elimine el comentario
+        if request.user == comentario.usuario or request.user.is_staff:
+            comentario.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
         else:
             return Response(
-                {"error": "El color es obligatorio."},
-                status=status.HTTP_400_BAD_REQUEST,
+                {"error": "No tienes permiso para eliminar este comentario"},
+                status=status.HTTP_403_FORBIDDEN,
             )
-
-        # Verificar si ya existe una personalización
-        if parte.personalizacion is None:
-            personalizacion = Personalizacion.objects.create(
-                nombre_personalizacion=f"Personalización de {parte.nombre_parte}",
-                fecha_creacion=request.data.get("fecha_creacion"),
-                usuario=request.user,
-                modelo=parte.modelo,
-            )
-            parte.personalizacion = personalizacion
-
-        parte.save()
-
+    except Comentario.DoesNotExist:
         return Response(
-            {
-                "message": "Parte personalizada con éxito",
-                "personalizacion": parte.personalizacion.id,
-            },
-            status=status.HTTP_200_OK,
+            {"error": "Comentario no encontrado"}, status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response(
+            {"error": f"Ocurrió un error al eliminar el comentario: {str(e)}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
 
-# Lista y creación de partes
-class ListaCrearParte(ListCreateAPIView):
-    serializer_class = ParteSerializer
-    authentication_classes = [TokenAuthentication]
+class Modelo3DViewSet(viewsets.ModelViewSet):
+    queryset = Modelo3D.objects.all()
+    serializer_class = Modelo3DSerializer
     permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        # Devuelve solo las partes del usuario autenticado
-        return Parte.objects.filter(usuario=self.request.user)
+    authentication_classes = [TokenAuthentication]
 
     def perform_create(self, serializer):
-        # Asigna el usuario autenticado a la parte
         serializer.save(usuario=self.request.user)
 
 
-class ModificarEliminarParte(RetrieveUpdateDestroyAPIView):
-    serializer_class = ParteSerializer
-    authentication_classes = [TokenAuthentication]
+class PersonalizacionViewSet(viewsets.ModelViewSet):
+    serializer_class = PersonalizacionSerializer
     permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
 
+    # Este método filtra las personalizaciones para que solo el usuario autenticado pueda ver las suyas.
     def get_queryset(self):
-        # Devuelve solo las partes del usuario autenticado
-        return Parte.objects.filter(usuario=self.request.user)
+        return Personalizacion.objects.filter(usuario=self.request.user)
 
-    def put(self, request, *args, **kwargs):
-        parte = self.get_object()
-        if parte.usuario != request.user:
-            return Response(
-                {"error": "No tienes permiso para modificar esta parte"},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-        return super().put(request, *args, **kwargs)
+    # Método para crear una personalización asociada al usuario autenticado
+    def perform_create(self, serializer):
+        serializer.save(usuario=self.request.user)
 
-    def delete(self, request, *args, **kwargs):
-        parte = self.get_object()
-        if parte.usuario != request.user:
-            return Response(
-                {"error": "No tienes permiso para eliminar esta parte"},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-        return super().delete(request, *args, **kwargs)
+
+class ParteViewSet(viewsets.ModelViewSet):
+    queryset = Parte.objects.all()
+    serializer_class = ParteSerializer
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
