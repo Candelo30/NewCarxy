@@ -8,15 +8,17 @@
     class="container-main grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 p-4"
   >
     <!-- Recorremos la lista de coches con *ngFor -->
+    <!-- *ngFor="let item of listCartsDesing" -->
+    @for (item of listCartsDesing; track item){
+
     <div
       class="box bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition transform hover:scale-105"
-      *ngFor="let item of listCartsDesing"
     >
       <a [routerLink]="['/design/cars-view', item.id]">
         <div class="container-img__panel">
           <model-viewer
-            src="{{ item.modelo.archivo_modelo }}"
-            alt="Modelo 3D de {{ item.nombre_personalizacion }}"
+            [src]="item.modelo.archivo_modelo"
+            alt="Modelo 3D de {{ item.modelo.nombre_personalizacion }}"
             auto-rotate
             camera-controls
             style="width: 100%; height: 200px"
@@ -46,6 +48,7 @@
         </div>
       </div>
     </div>
+    }
   </div>
 
   <!-- Si la lista está vacía -->
@@ -56,6 +59,126 @@
     <p>Por favor añade elementos al panel</p>
   </div>
 </main>
+
+<!-- Modal Mejorado -->
+
+<div
+  class="fixed z-10 inset-0 overflow-y-auto"
+  *ngIf="isModalOpen"
+  aria-labelledby="modal-title"
+  role="dialog"
+  aria-modal="true"
+>
+  <div
+    class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0"
+  >
+    <!-- Fondo del modal -->
+    <div
+      class="fixed inset-0 bg-gray-600 dark:bg-black bg-opacity-75 transition-opacity"
+      aria-hidden="true"
+    ></div>
+
+    <!-- Truco para centrar el modal en pantallas grandes -->
+    <span
+      class="hidden sm:inline-block sm:align-middle sm:h-screen"
+      aria-hidden="true"
+      >&#8203;</span
+    >
+
+    <!-- Contenedor del Modal con más espaciado y mejor estructura -->
+    <div
+      class="inline-block align-bottom bg-white dark:bg-gray-900 rounded-lg px-8 pt-7 pb-8 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-10"
+    >
+      <h3
+        class="text-xl leading-6 font-medium text-gray-900 dark:text-gray-100 mb-6"
+        id="modal-title"
+      >
+        Crear Nueva Personalización
+      </h3>
+
+      <!-- Contenido del Modal -->
+      <div class="space-y-6">
+        <!-- Formulario para crear una nueva personalización -->
+        <form (ngSubmit)="createPersonalization()">
+          <!-- Campo para el nombre de la personalización -->
+          <div>
+            <label
+              for="nombre_personalizacion"
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >Nombre de la Personalización</label
+            >
+            <input
+              type="text"
+              id="nombre_personalizacion"
+              [(ngModel)]="newPersonalization.nombre_personalizacion"
+              name="nombre_personalizacion"
+              class="block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-800 dark:text-gray-100"
+              required
+            />
+          </div>
+
+          <!-- Selección del modelo 3D -->
+          <div>
+            <label
+              for="modelo"
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >Seleccionar Modelo 3D</label
+            >
+            <select
+              id="modelo"
+              [(ngModel)]="newPersonalization.modelo"
+              name="modelo"
+              class="block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-gray-100 rounded-md shadow-sm focus:outline-none sm:text-sm"
+              (change)="onModeloChange($event)"
+              required
+            >
+              <option *ngFor="let modelo of modelos3D" [ngValue]="modelo">
+                {{ modelo.nombre_modelo }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Vista previa del modelo seleccionado -->
+          <div class="mt-4" *ngIf="modeloSeleccionado">
+            <label
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >Vista previa del modelo 3D</label
+            >
+            <model-viewer
+              [src]="modeloSeleccionado.archivo_modelo"
+              alt="Vista previa del modelo 3D"
+              auto-rotate
+              camera-controls
+              style="
+                width: 100%;
+                height: 300px;
+                border-radius: 10px;
+                box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+              "
+            ></model-viewer>
+          </div>
+
+          <!-- Botones de acción -->
+          <div class="mt-6 sm:flex sm:flex-row-reverse">
+            <button
+              type="submit"
+              class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-5 py-3 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm"
+            >
+              Guardar
+            </button>
+            <button
+              type="button"
+              class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-5 py-3 bg-gray-200 dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:mt-0 sm:w-auto sm:text-sm"
+              (click)="closeModal()"
+            >
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Botón flotante en la esquina inferior derecha -->
 <a
