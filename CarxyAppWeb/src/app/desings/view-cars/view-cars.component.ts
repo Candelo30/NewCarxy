@@ -12,6 +12,8 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { PersonalizacionService } from '../../core/services/personalizacion.service';
+import { ParteService } from '../../core/services/parte.service';
+import { UserService } from '../../core/services/user.service';
 
 @Component({
   selector: 'app-view-cars',
@@ -31,6 +33,7 @@ export class ViewCarsComponent implements OnInit {
   titleCar = 'Coche Ejemplo'; // Nombre de diseño del coche (hardcoded)
   saveDesingStatus: boolean = false;
   id: any;
+  userId = 0;
 
   // Variables para los controles de rango
   rotationX: number = 0;
@@ -44,7 +47,8 @@ export class ViewCarsComponent implements OnInit {
   private scene!: THREE.Scene;
   private camera!: THREE.PerspectiveCamera;
   private renderer!: THREE.WebGLRenderer;
-  public model!: THREE.Object3D;
+  public model: THREE.Object3D | null = null;
+
   private controls!: OrbitControls;
   public parts: THREE.Object3D[] = [];
   private currentOutline: THREE.Mesh | null = null;
@@ -52,25 +56,76 @@ export class ViewCarsComponent implements OnInit {
   private originalColors: Map<THREE.Mesh, THREE.Color> = new Map();
   private highlightLight!: THREE.PointLight;
 
-  // Colores hardcodeados
+  // Colores para coches
   colorList = [
-    { id: 1, name: 'Rojo', hex: '#FF0000' },
-    { id: 2, name: 'Verde', hex: '#00FF00' },
-    { id: 3, name: 'Azul', hex: '#0000FF' },
+    { id: 1, name: 'Negro', hex: '#000000' },
+    { id: 2, name: 'Blanco', hex: '#FFFFFF' },
+    { id: 3, name: 'Gris', hex: '#808080' },
+    { id: 4, name: 'Rojo', hex: '#FF0000' },
+    { id: 5, name: 'Azul Marino', hex: '#000080' },
+    { id: 6, name: 'Plata', hex: '#C0C0C0' },
+    { id: 7, name: 'Verde Esmeralda', hex: '#50C878' },
+    { id: 8, name: 'Amarillo', hex: '#FFFF00' },
+    { id: 9, name: 'Naranja', hex: '#FFA500' },
+    { id: 10, name: 'Vino', hex: '#800000' },
+    { id: 11, name: 'Beige', hex: '#F5F5DC' },
+    { id: 12, name: 'Marrón', hex: '#A52A2A' },
   ];
+
   constructor(
     private personalizacionService: PersonalizacionService,
-    private route: ActivatedRoute
+    private PartsService: ParteService,
+    private route: ActivatedRoute,
+    private UserData: UserService
   ) {}
 
   ngOnInit(): void {
+    // Escucha el evento de redimensionar la ventana
+    window.addEventListener('resize', this.onWindowResize.bind(this));
+    this.saveDesingStatus = localStorage.getItem('saveDesingStatus') === 'true';
+    window.addEventListener('beforeunload', (event) => {
+      if (!this.saveDesingStatus) {
+        event.returnValue =
+          'Tienes cambios no guardados. ¿Seguro que quieres salir?';
+      }
+    });
     this.route.paramMap.subscribe((params) => {
       this.id = params.get('id');
 
       // Ejecuta loadPersonalizaciones solo cuando ya tienes el ID.
       if (this.id) {
         this.loadPersonalizaciones();
+        this.loadUserData();
       }
+    });
+  }
+
+  onWindowResize(): void {
+    // Verifica si la cámara y el renderer están inicializados
+    if (this.camera && this.renderer) {
+      const container = this.rendererContainer.nativeElement;
+
+      // Actualizar el tamaño del renderer
+      this.renderer.setSize(container.offsetWidth, container.offsetHeight);
+
+      // Actualizar la relación de aspecto de la cámara
+      this.camera.aspect = container.offsetWidth / container.offsetHeight;
+      this.camera.updateProjectionMatrix(); // Necesario para actualizar la cámara
+    }
+  }
+
+  // Método para cargar los datos del usuario
+  private loadUserData(): void {
+    this.UserData.loadAllResources().subscribe({
+      next: (resources) => {
+        const data = resources.userData; // Datos del usuario
+        this.userId = data.id;
+
+        // Asignar los valores a las propiedades del componente
+      },
+      error: (err) => {
+        console.error('Error al cargar los datos', err);
+      },
     });
   }
 
@@ -79,17 +134,56 @@ export class ViewCarsComponent implements OnInit {
   loadPersonalizaciones(): void {
     this.personalizacionService.getPersonalizacionesPorID(this.id).subscribe(
       (data) => {
-        console.log(data);
-        this.listCartsDesing = data.modelo; // Almacena el modelo directamente
-        this.titleCar = this.listCartsDesing.nombre_modelo;
+        this.listCartsDesing = data.modelo;
+        console.log(this.listCartsDesing);
+        this.titleCar = data.nombre_personalizacion;
 
         this.createScene();
         this.loadModel();
+
+        // Cargar las partes personalizadas
+        this.PartsService.getPartesPorModelo(this.id).subscribe(
+          (partes) => {
+            this.applySavedParts(partes); // Aplica los colores guardados
+          },
+          (error) => {
+            console.error('Error al cargar las partes personalizadas:', error);
+          }
+        );
       },
       (error) => {
         console.error('Error al cargar personalizaciones:', error);
       }
     );
+  }
+
+  reloadModel(): void {
+    // Eliminar el modelo actual de la escena
+    if (this.model) {
+      this.scene.remove(this.model);
+      this.model.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          child.geometry.dispose();
+          (child.material as THREE.MeshStandardMaterial).dispose();
+        }
+      });
+      this.model = null; // Asegúrate de que el modelo esté nulo después de eliminarlo
+      this.saveDesingStatus = false;
+    }
+
+    // Volver a cargar el modelo
+    this.loadModel();
+  }
+
+  applySavedParts(partes: any[]): void {
+    partes.forEach((parte) => {
+      const partObject = this.parts.find((p) => p.name === parte.nombre_parte);
+      if (partObject) {
+        const material = (partObject as THREE.Mesh)
+          .material as THREE.MeshStandardMaterial;
+        material.color.set(parte.color); // Aplica el color guardado
+      }
+    });
   }
 
   createScene(): void {
@@ -148,11 +242,36 @@ export class ViewCarsComponent implements OnInit {
     loader.load(
       `${this.listCartsDesing.archivo_modelo}`, // Ruta del modelo GLB
       (gltf) => {
+        // Antes de cargar el nuevo modelo, limpiamos el modelo anterior si existe
+        if (this.model) {
+          this.scene.remove(this.model);
+          this.model.traverse((child) => {
+            if (child instanceof THREE.Mesh) {
+              child.geometry.dispose();
+              (child.material as THREE.MeshStandardMaterial).dispose();
+            }
+          });
+        }
+
+        // Cargar el nuevo modelo
         this.model = gltf.scene;
         this.model.scale.set(0.1, 0.1, 0.1);
         this.model.position.set(0, 0, 0);
         this.scene.add(this.model);
+
+        // Limpiar la lista de partes antes de dividir el nuevo modelo
+        this.parts = []; // Limpiar las partes existentes
         this.splitModelIntoParts();
+
+        // Después de cargar el modelo, carga las partes personalizadas
+        this.PartsService.getPartesPorModelo(this.id).subscribe(
+          (partes) => {
+            this.applySavedParts(partes); // Aplica los colores guardados
+          },
+          (error) => {
+            console.error('Error al cargar las partes personalizadas:', error);
+          }
+        );
 
         // Ocultar indicador de carga
         this.loading = false;
@@ -170,7 +289,7 @@ export class ViewCarsComponent implements OnInit {
   }
 
   splitModelIntoParts(): void {
-    this.model.traverse((child) => {
+    this.model?.traverse((child) => {
       if (child instanceof THREE.Mesh) {
         const originalColor = new THREE.Color(
           (child.material as THREE.MeshStandardMaterial).color.getHex()
@@ -183,6 +302,7 @@ export class ViewCarsComponent implements OnInit {
   }
 
   changeModelColor(color: string): void {
+    this.saveDesingStatus = false;
     if (this.selectedPart) {
       (this.selectedPart.material as THREE.MeshStandardMaterial).color.set(
         color
@@ -263,10 +383,23 @@ export class ViewCarsComponent implements OnInit {
         .material as THREE.MeshStandardMaterial;
       return {
         nombre_parte: part.name,
-        color: material.color.getStyle(), // Obtener el color en formato CSS
-        modelo_id: this.id, // El ID del modelo actual
+        color: material.color.getStyle(), // Color en formato CSS
+        modelo: this.listCartsDesing.id, // Relacionar con el modelo actual
+        personalizacion: this.id, // Relacionar con la personalización actual si es necesario
+        usuario: this.userId, // Ajusta este valor según el usuario
       };
     });
+
+    this.PartsService.savePartes(partsData).subscribe(
+      (response) => {
+        this.saveDesingStatus = true;
+        localStorage.setItem('saveDesingStatus', 'true'); // Guardar en localStorage
+        console.log('Diseño guardado con éxito:', response);
+      },
+      (error) => {
+        console.error('Error al guardar el diseño:', error);
+      }
+    );
 
     // this.personalizacionService.savePartes(partsData).subscribe(
     //   (response) => {

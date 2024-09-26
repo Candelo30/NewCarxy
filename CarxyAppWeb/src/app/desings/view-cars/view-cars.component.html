@@ -136,38 +136,64 @@
 
   <!-- Footer -->
   <div
-    class="container-panel__footer mt-10 p-6 bg-gray-100 dark:bg-gray-700 border-t border-gray-300 dark:border-gray-600 flex justify-between"
+    class="container-panel__footer mt-10 p-6 bg-gray-100 dark:bg-gray-700 border-t border-gray-300 dark:border-gray-600 flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0 sm:space-x-4 shadow-lg rounded-lg"
   >
-    <div class="container-colors flex flex-col space-y-4">
-      <span class="text-lg font-semibold">Colores</span>
-      <div class="flex space-x-2">
+    <!-- Color Palette -->
+    <div class="container-colors flex flex-col items-center space-y-2">
+      <span class="text-lg font-semibold text-gray-800 dark:text-gray-200"
+        >Colores</span
+      >
+      <div class="flex flex-wrap space-x-2">
         <div
           *ngFor="let item of colorList"
-          class="w-8 h-8 rounded-full cursor-pointer border"
+          class="w-8 h-8 rounded-full cursor-pointer border border-transparent hover:border-blue-500 transition-all"
           [style.backgroundColor]="item.hex"
           (click)="changeModelColor(item.hex)"
+          title="{{ item.name }}"
         ></div>
       </div>
     </div>
 
-    <!-- Panel icons -->
+    <!-- Panel Icons -->
     <div class="panel-desing__icons flex space-x-4 items-center">
-      <button
-        class="bg-kingfisher-daisy-500 text-white px-4 py-2 rounded-lg dark:bg-kingfisher-daisy-600"
+      <!-- Restablecer Color -->
+      <div
+        class="icon-button cursor-pointer p-2 rounded-md bg-white dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 transition-all"
+        title="Restablecer color"
+        (click)="reloadModel()"
       >
-        Restablecer Color
-      </button>
-      <button
+        <span
+          class="material-icons text-kingfisher-daisy-500 dark:text-kingfisher-daisy-600"
+          >refresh</span
+        >
+        <span class="tooltip hidden">Restablecer color</span>
+      </div>
+
+      <!-- Restablecer Cámara -->
+      <div
+        class="icon-button cursor-pointer p-2 rounded-md bg-white dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 transition-all"
+        title="Restablecer cámara"
         (click)="resetCamera()"
-        class="bg-kingfisher-daisy-500 text-white px-4 py-2 rounded-lg dark:bg-kingfisher-daisy-600"
       >
-        Restablecer Cámara
-      </button>
-      <i
-        class="fa-regular fa-floppy-disk text-xl cursor-pointer"
-        (click)="saveDesingStatus = !saveDesingStatus"
-      ></i>
-      <i class="fa-solid fa-download text-xl cursor-pointer"></i>
+        <span
+          class="material-icons text-kingfisher-daisy-500 dark:text-kingfisher-daisy-600"
+          >camera</span
+        >
+        <span class="tooltip hidden">Restablecer cámara</span>
+      </div>
+
+      <!-- Save Design -->
+      <div
+        class="icon-button cursor-pointer p-2 rounded-md bg-white dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 transition-all"
+        title="Guardar"
+        (click)="saveDesign()"
+      >
+        <span
+          class="material-icons text-kingfisher-daisy-500 dark:text-kingfisher-daisy-600"
+          >save</span
+        >
+        <span class="tooltip hidden">Guardar diseño</span>
+      </div>
     </div>
   </div>
 
