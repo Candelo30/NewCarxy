@@ -20,14 +20,15 @@ export class RegisterComponent {
   constructor(public userService: AuthService, public router: Router) {}
 
   Registro() {
-    const formData = new FormData();
-    formData.append('first_name', this.first_name);
-    formData.append('last_name', this.last_name);
-    formData.append('username', this.username);
-    formData.append('email', this.email);
-    formData.append('password', this.password);
+    const userData = {
+      first_name: this.first_name,
+      last_name: this.last_name,
+      username: this.username,
+      email: this.email,
+      password: this.password,
+    };
 
-    this.userService.Registrar(formData).subscribe(
+    this.userService.Registrar(userData).subscribe(
       (data: any) => {
         this.userService.AsignarToken(data.token);
         this.router.navigate(['/login']);
