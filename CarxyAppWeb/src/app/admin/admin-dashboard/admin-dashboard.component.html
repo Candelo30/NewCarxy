@@ -2,18 +2,17 @@
 
 <main
   class="px-4 mt-4 w-full h-screen overflow-auto"
-  style="height: calc(100vh - 96px)"
+  style="height: calc(100vh - 136px)"
 >
   <div
     class="admin-dashboard p-6 bg-gray-100 dark:bg-gray-900 min-h-screen transition-colors"
   >
     <h1
-      class="text-3xl font-bold mb-6 text-kingfisher-daisy-600 dark:text-white"
+      class="text-4xl font-bold mb-8 text-kingfisher-daisy-600 dark:text-white"
     >
       Panel de Administración
     </h1>
 
-    <!-- Botón de Navegación a Usuarios -->
     <div class="mb-6 space-x-2">
       <a
         routerLink="/admin/usuarios"
@@ -51,8 +50,21 @@
       </div>
     </div>
 
+    <!-- Cargando Estado -->
+    <div *ngIf="loading" class="text-center">
+      <p class="text-gray-600">Cargando datos...</p>
+    </div>
+
+    <!-- Mensaje de Error -->
+    <div *ngIf="errorMessage" class="text-red-600">
+      {{ errorMessage }}
+    </div>
+
     <!-- Últimas Publicaciones -->
-    <div class="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
+    <div
+      class="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-md p-4"
+      *ngIf="!loading && !errorMessage"
+    >
       <h3
         class="text-xl font-bold text-kingfisher-daisy-600 dark:text-white mb-2"
       >
@@ -64,7 +76,7 @@
           class="p-3 border-b border-gray-200 dark:border-gray-700"
         >
           <strong class="text-gray-800 dark:text-gray-200">{{
-            publicacion.usuario.username
+            publicacion.usuario_username || "Anónimo"
           }}</strong
           >: {{ publicacion.descripcion }}
           <span class="text-gray-500 dark:text-gray-400">{{
@@ -75,7 +87,10 @@
     </div>
 
     <!-- Comentarios Recientes -->
-    <div class="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
+    <div
+      class="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-md p-4"
+      *ngIf="!loading && !errorMessage"
+    >
       <h3
         class="text-xl font-bold text-kingfisher-daisy-600 dark:text-white mb-2"
       >
@@ -87,7 +102,7 @@
           class="p-3 border-b border-gray-200 dark:border-gray-700"
         >
           <strong class="text-gray-800 dark:text-gray-200">{{
-            comentario.usuario.username
+            comentario.usuario_username || "Anónimo"
           }}</strong
           >: {{ comentario.comentario }}
           <span class="text-gray-500 dark:text-gray-400">{{

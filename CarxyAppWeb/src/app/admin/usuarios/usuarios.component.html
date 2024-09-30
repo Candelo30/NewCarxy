@@ -2,37 +2,103 @@
 
 <main
   class="px-4 mt-4 w-full h-screen overflow-auto"
-  style="height: calc(100vh - 96px)"
+  style="height: calc(100vh - 136px)"
 >
   <div
     class="admin-dashboard p-6 bg-gray-100 dark:bg-gray-900 min-h-screen transition-colors"
   >
     <h1
-      class="text-3xl font-bold mb-6 text-kingfisher-daisy-600 dark:text-white"
+      class="text-4xl font-bold mb-8 text-kingfisher-daisy-600 dark:text-white"
     >
-      Gestión de usuarios
+      Gestión de Usuarios
     </h1>
 
-    <!-- Botón de Navegación a Usuarios -->
-    <div class="mb-6 space-x-2">
-      <a
-        routerLink="/admin/"
-        class="inline-flex items-center px-4 py-2 bg-kingfisher-daisy-600 text-white rounded-md shadow-md hover:bg-kingfisher-daisy-500 transition duration-200"
+    <!-- Navegación Principal -->
+    <nav class="mb-6">
+      <ul class="flex space-x-2">
+        <li>
+          <a
+            routerLink="/admin/"
+            class="inline-flex items-center px-4 py-2 bg-kingfisher-daisy-600 text-white rounded-md shadow-md hover:bg-kingfisher-daisy-500 transition duration-200"
+            aria-label="Volver al Dashboard"
+          >
+            Dashboard
+          </a>
+        </li>
+        <li>
+          <a
+            routerLink="/admin/usuarios"
+            class="inline-flex items-center px-4 py-2 bg-kingfisher-daisy-600 text-white rounded-md shadow-md hover:bg-kingfisher-daisy-500 transition duration-200"
+            aria-label="Gestionar Usuarios"
+          >
+            Gestionar Usuarios
+          </a>
+        </li>
+        <li>
+          <a
+            routerLink="/admin/configuracion"
+            class="inline-flex items-center px-4 py-2 bg-kingfisher-daisy-600 text-white rounded-md shadow-md hover:bg-kingfisher-daisy-500 transition duration-200"
+            aria-label="Configuraciones"
+          >
+            Configuraciones
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Cargando Estado -->
+    <div *ngIf="loading" class="text-center">
+      <p class="text-gray-600">Cargando usuarios...</p>
+    </div>
+
+    <!-- Mensaje de Error -->
+    <div *ngIf="errorMessage" class="text-red-600 mb-4">
+      <p class="font-semibold">{{ errorMessage }}</p>
+    </div>
+
+    <!-- Tabla de Usuarios -->
+    <div class="overflow-x-auto">
+      <table class="min-w-full bg-white dark:bg-gray-800 rounded-lg shadow-md">
+        <thead>
+          <tr class="bg-kingfisher-daisy-500 text-white text-left">
+            <th class="px-4 py-2">ID</th>
+            <th class="px-4 py-2">Nombre de Usuario</th>
+            <th class="px-4 py-2">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let usuario of usuarios"
+            class="border-b hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+          >
+            <td class="border px-4 py-2">{{ usuario.id }}</td>
+            <td class="border px-4 py-2">{{ usuario.username }}</td>
+            <td class="border px-4 py-2 flex space-x-2">
+              <button
+                class="bg-blue-500 text-white rounded px-4 py-1 transition duration-200 hover:bg-blue-400"
+              >
+                Editar
+              </button>
+              <button
+                (click)="eliminarUsuario(usuario.id)"
+                class="bg-red-500 text-white rounded px-4 py-1 transition duration-200 hover:bg-red-400"
+              >
+                Eliminar
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Botón Flotante para Agregar Usuario -->
+    <div class="fixed bottom-4 right-4">
+      <button
+        (click)="agregarUsuario()"
+        class="bg-green-600 text-white px-6 py-3 rounded-full shadow-lg transition duration-200 hover:bg-green-500 focus:outline-none"
       >
-        Dashboard
-      </a>
-      <a
-        routerLink="/admin/usuarios"
-        class="inline-flex items-center px-4 py-2 bg-kingfisher-daisy-600 text-white rounded-md shadow-md hover:bg-kingfisher-daisy-500 transition duration-200"
-      >
-        Gestionar Usuarios
-      </a>
-      <a
-        routerLink="/admin/configuracion"
-        class="inline-flex items-center px-4 py-2 bg-kingfisher-daisy-600 text-white rounded-md shadow-md hover:bg-kingfisher-daisy-500 transition duration-200"
-      >
-        Configuraciones
-      </a>
+        Agregar Usuario
+      </button>
     </div>
   </div>
 </main>
