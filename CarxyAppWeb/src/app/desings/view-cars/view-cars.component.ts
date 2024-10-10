@@ -5,6 +5,7 @@ import {
   OnInit,
   ViewChild,
 } from '@angular/core';
+import html2canvas from 'html2canvas';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
@@ -14,11 +15,14 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { PersonalizacionService } from '../../core/services/personalizacion.service';
 import { ParteService } from '../../core/services/parte.service';
 import { UserService } from '../../core/services/user.service';
+import { NotificationsComponent } from '../../shared/components/notifications/notifications.component';
+import { NotificationService } from '../../core/services/notification.service';
+import { Notification } from '../../interface/notifications/notification.model';
 
 @Component({
   selector: 'app-view-cars',
   standalone: true,
-  imports: [FormsModule, CommonModule, RouterLink],
+  imports: [FormsModule, CommonModule, RouterLink, NotificationsComponent],
   templateUrl: './view-cars.component.html',
   styleUrl: './view-cars.component.css',
 })
@@ -76,10 +80,20 @@ export class ViewCarsComponent implements OnInit {
     private personalizacionService: PersonalizacionService,
     private PartsService: ParteService,
     private route: ActivatedRoute,
-    private UserData: UserService
+    private UserData: UserService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
+    const successNotification: Notification = {
+      type: 'message',
+      message:
+        'Ah algunos modelos les tienes que dar zoom para poder visualizarlos bien',
+      style: 'info',
+      duration: undefined, // Duración en milisegundos
+      dismissible: true,
+    };
+    this.notificationService.addNotification(successNotification);
     // Escucha el evento de redimensionar la ventana
     window.addEventListener('resize', this.onWindowResize.bind(this));
     this.saveDesingStatus = localStorage.getItem('saveDesingStatus') === 'true';
@@ -98,6 +112,35 @@ export class ViewCarsComponent implements OnInit {
         this.loadUserData();
       }
     });
+  }
+
+  captureThreeJSCanvas(): void {
+    const canvas = this.renderer.domElement;
+
+    if (canvas) {
+      console.log('Canvas encontrado:', canvas);
+
+      // Forzar renderizado
+      this.renderer.render(this.scene, this.camera); // Renderiza la escena antes de capturar
+
+      // Captura el canvas
+      const dataURL = canvas.toDataURL('image/png'); // o 'image/jpeg' para JPG
+      console.log('Data URL generado:', dataURL);
+
+      if (dataURL) {
+        const link = document.createElement('a');
+        link.href = dataURL;
+        link.download = 'captura-modelo.png';
+        link.click();
+        alert('Captura guardada como captura-modelo.png');
+      } else {
+        console.error('No se pudo generar el dataURL');
+        alert('Error al generar la captura');
+      }
+    } else {
+      console.error('No se encontró el canvas');
+      alert('No se pudo encontrar el canvas');
+    }
   }
 
   onWindowResize(): void {
@@ -135,16 +178,17 @@ export class ViewCarsComponent implements OnInit {
     this.personalizacionService.getPersonalizacionesPorID(this.id).subscribe(
       (data) => {
         this.listCartsDesing = data.modelo;
-        console.log(this.listCartsDesing);
+        console.log('Modelo cargado:', this.listCartsDesing);
         this.titleCar = data.nombre_personalizacion;
 
         this.createScene();
-        this.loadModel();
+        this.loadModel(); // Cargar el modelo
 
-        // Cargar las partes personalizadas
+        // Cargar las partes personalizadas después de cargar el modelo
         this.PartsService.getPartesPorModelo(this.id).subscribe(
           (partes) => {
-            this.applySavedParts(partes); // Aplica los colores guardados
+            console.log('Partes personalizadas cargadas:', partes);
+            this.applySavedParts(partes);
           },
           (error) => {
             console.error('Error al cargar las partes personalizadas:', error);
@@ -178,10 +222,28 @@ export class ViewCarsComponent implements OnInit {
   applySavedParts(partes: any[]): void {
     partes.forEach((parte) => {
       const partObject = this.parts.find((p) => p.name === parte.nombre_parte);
+      const successNotification: Notification = {
+        type: 'alert',
+        message: 'Buscando partes',
+        style: 'info',
+        duration: 2000, // Duración en milisegundos
+        dismissible: false,
+      };
+      this.notificationService.addNotification(successNotification);
       if (partObject) {
         const material = (partObject as THREE.Mesh)
           .material as THREE.MeshStandardMaterial;
+        const successNotification: Notification = {
+          type: 'alert',
+          message: 'Partes cargadas',
+          style: 'success',
+          duration: 2000, // Duración en milisegundos
+          dismissible: false,
+        };
+        this.notificationService.addNotification(successNotification);
         material.color.set(parte.color); // Aplica el color guardado
+      } else {
+        console.warn(`Parte no encontrada: ${parte.nombre_parte}`);
       }
     });
   }
@@ -237,33 +299,20 @@ export class ViewCarsComponent implements OnInit {
     animate();
   }
 
-  private loadModel(): void {
+  loadModel(): void {
     const loader = new GLTFLoader();
     loader.load(
       `${this.listCartsDesing.archivo_modelo}`, // Ruta del modelo GLB
       (gltf) => {
-        // Antes de cargar el nuevo modelo, limpiamos el modelo anterior si existe
-        if (this.model) {
-          this.scene.remove(this.model);
-          this.model.traverse((child) => {
-            if (child instanceof THREE.Mesh) {
-              child.geometry.dispose();
-              (child.material as THREE.MeshStandardMaterial).dispose();
-            }
-          });
-        }
-
-        // Cargar el nuevo modelo
         this.model = gltf.scene;
         this.model.scale.set(0.1, 0.1, 0.1);
         this.model.position.set(0, 0, 0);
         this.scene.add(this.model);
 
-        // Limpiar la lista de partes antes de dividir el nuevo modelo
-        this.parts = []; // Limpiar las partes existentes
+        // Divide el modelo en partes
         this.splitModelIntoParts();
 
-        // Después de cargar el modelo, carga las partes personalizadas
+        // Después de dividir el modelo, carga las partes personalizadas
         this.PartsService.getPartesPorModelo(this.id).subscribe(
           (partes) => {
             this.applySavedParts(partes); // Aplica los colores guardados
@@ -295,7 +344,11 @@ export class ViewCarsComponent implements OnInit {
           (child.material as THREE.MeshStandardMaterial).color.getHex()
         );
         this.originalColors.set(child, originalColor);
+
+        // Asegúrate de que cada parte tenga un nombre
         child.name = child.name || `Parte ${this.parts.length + 1}`;
+
+        // Añadir la parte al array
         this.parts.push(child);
       }
     });
@@ -384,30 +437,78 @@ export class ViewCarsComponent implements OnInit {
       return {
         nombre_parte: part.name,
         color: material.color.getStyle(), // Color en formato CSS
-        modelo: this.listCartsDesing.id, // Relacionar con el modelo actual
-        personalizacion: this.id, // Relacionar con la personalización actual si es necesario
-        usuario: this.userId, // Ajusta este valor según el usuario
+        modelo_id: this.listCartsDesing.id, // Relacionar con el modelo actual
+        personalizacion_id: parseInt(this.id, 10), // Convertir a entero
       };
     });
 
-    this.PartsService.savePartes(partsData).subscribe(
-      (response) => {
-        this.saveDesingStatus = true;
-        localStorage.setItem('saveDesingStatus', 'true'); // Guardar en localStorage
-        console.log('Diseño guardado con éxito:', response);
-      },
-      (error) => {
-        console.error('Error al guardar el diseño:', error);
-      }
+    // Verificar los datos antes de enviarlos
+    console.log('Datos enviados:', partsData);
+
+    const datosValidos = partsData.every(
+      (part) =>
+        part.nombre_parte &&
+        part.color &&
+        part.modelo_id &&
+        part.personalizacion_id
     );
 
-    // this.personalizacionService.savePartes(partsData).subscribe(
-    //   (response) => {
-    //     console.log("Diseño guardado con éxito:", response);
-    //   },
-    //   (error) => {
-    //     console.error("Error al guardar el diseño:", error);
-    //   }
-    // );
+    if (!datosValidos) {
+      console.error('Los datos no son válidos:', partsData);
+      return;
+    }
+
+    // Manejar las solicitudes de forma asíncrona usando promesas
+    const saveRequests = partsData.map((parteData) =>
+      this.PartsService.savePartes(parteData).toPromise()
+    );
+
+    Promise.allSettled(saveRequests)
+      .then((results) => {
+        const createdParts: any = [];
+        const errorMessages: any = [];
+
+        results.forEach((result, index) => {
+          if (result.status === 'fulfilled') {
+            createdParts.push(result.value); // Agregar parte creada o actualizada
+            console.log();
+            const successNotification: Notification = {
+              type: 'alert',
+              message: `Parte guardada con éxito`,
+              style: 'success',
+              duration: 2000, // Duración en milisegundos
+              dismissible: false,
+            };
+            this.notificationService.addNotification(successNotification);
+          } else {
+            console.error('Error al guardar la parte:', result.reason);
+            const errorMessage = result.reason?.error
+              ? result.reason.error
+              : 'Error desconocido';
+            errorMessages.push({
+              parte: partsData[index].nombre_parte,
+              mensaje: errorMessage,
+            });
+          }
+        });
+
+        // Mostrar mensajes de éxito o error después de intentar guardar todas las partes
+        if (createdParts.length > 0) {
+          this.saveDesingStatus = true;
+          localStorage.setItem('saveDesingStatus', 'true'); // Guardar en localStorage
+          // Mostrar mensaje de éxito al usuario aquí
+          console.log('Todas las partes guardadas con éxito:', createdParts);
+        }
+
+        if (errorMessages.length > 0) {
+          // Mostrar todos los mensajes de error al usuario
+          console.error('Errores al guardar partes:', errorMessages);
+          // Puedes manejar los errores aquí, mostrando mensajes personalizados según el error
+        }
+      })
+      .catch((error) => {
+        console.error('Error inesperado:', error);
+        // Manejo de errores inesperados
+      });
   }
 }

@@ -48,6 +48,7 @@
   class="p-6 dark:bg-gray-800 dark:text-white overflow-auto w-full h-screen"
   style="height: calc(100vh - 60px)"
 >
+  <app-notifications></app-notifications>
   <div class="view-element flex flex-col items-center space-y-6">
     <div class="wrapper-bg"></div>
 
@@ -194,6 +195,7 @@
         >
         <span class="tooltip hidden">Guardar diseño</span>
       </div>
+      <button (click)="captureThreeJSCanvas()">Capturar Pantalla</button>
     </div>
   </div>
 

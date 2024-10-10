@@ -14,6 +14,8 @@ class UsuariosSerializer(serializers.ModelSerializer):
             "email",
             "password",
             "is_staff",
+            "last_login",
+            "date_joined",
         )
         extra_kwargs = {
             "password": {
@@ -40,14 +42,32 @@ class UsuariosSerializer(serializers.ModelSerializer):
         return user
 
 
+# ···············································
+
+
 class PublicacionSerializer(serializers.ModelSerializer):
-    usuario_username = serializers.CharField(source="usuario.username", read_only=True)
+    usuario_username = serializers.ReadOnlyField(source="usuario.username")
+    usuario_id = serializers.ReadOnlyField(source="usuario.id")
     usuario_foto = serializers.SerializerMethodField()
     comentarios = serializers.SerializerMethodField()
+    liked_by_user = (
+        serializers.SerializerMethodField()
+    )  # Campo para verificar si el usuario ha dado like
 
     class Meta:
         model = Publicacion
-        fields = "__all__"
+        fields = [
+            "id",
+            "usuario_id",
+            "usuario_username",
+            "usuario_foto",
+            "fecha_creacion",
+            "imagen",
+            "descripcion",
+            "megusta",
+            "comentarios",
+            "liked_by_user",  # Agregar el nuevo campo aquí
+        ]
 
     def get_usuario_foto(self, obj):
         request = self.context.get("request")
@@ -57,32 +77,40 @@ class PublicacionSerializer(serializers.ModelSerializer):
 
     def get_comentarios(self, obj):
         comentarios = obj.comentarios.all()
-        return [
-            {
-                "usuario_username": comentario.usuario.username,
-                "comentario": comentario.comentario,
-                "fecha_comentario": comentario.fecha_comentario,
-                "usuario_foto": self.get_comentario_foto(comentario),
-            }
-            for comentario in comentarios
+        return ComentarioSerializer(comentarios, many=True, context=self.context).data
+
+    def get_liked_by_user(self, obj):
+        user = self.context["request"].user
+        if user.is_authenticated:
+            return Like.objects.filter(usuario=user, publicacion=obj).exists()
+        return False  # Devuelve False si el usuario no está autenticado
+
+
+class ComentarioSerializer(serializers.ModelSerializer):
+    usuario_username = serializers.ReadOnlyField(source="usuario.username")
+    usuario_foto = serializers.SerializerMethodField()
+    usuario_id = serializers.ReadOnlyField(source="usuario.id")
+
+    class Meta:
+        model = Comentario
+        fields = [
+            "id",
+            "usuario_id",
+            "usuario_username",
+            "usuario_foto",
+            "publicacion",
+            "comentario",
+            "fecha_comentario",
         ]
 
-    def get_comentario_foto(self, comentario):
+    def get_usuario_foto(self, comentario):
         request = self.context.get("request")
         if comentario.usuario.foto_perfil:
             return request.build_absolute_uri(comentario.usuario.foto_perfil.url)
         return None
 
 
-class ComentarioSerializer(serializers.ModelSerializer):
-    usuario = UsuariosSerializer(read_only=True)
-    publicacion = serializers.PrimaryKeyRelatedField(queryset=Publicacion.objects.all())
-
-    class Meta:
-        model = Comentario
-        fields = "__all__"
-
-
+# ____________________________________________________________________________
 class Modelo3DSerializer(serializers.ModelSerializer):
     usuario = UsuariosSerializer(
         read_only=True
@@ -122,14 +150,77 @@ class PersonalizacionSerializer(serializers.ModelSerializer):
 
 
 class ParteSerializer(serializers.ModelSerializer):
-    modelo = Modelo3DSerializer(
-        read_only=True
-    )  # Añadir modelo como serializador anidado
-    personalizacion = PersonalizacionSerializer(
-        read_only=True
-    )  # Añadir personalizacion como serializador anidado
-    usuario = UsuariosSerializer(read_only=True)
+    modelo_id = serializers.PrimaryKeyRelatedField(
+        queryset=Modelo3D.objects.all(), source="modelo", write_only=True
+    )
+    personalizacion_id = serializers.PrimaryKeyRelatedField(
+        queryset=Personalizacion.objects.all(),
+        source="personalizacion",
+        write_only=True,
+    )
+    usuario = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    modelo = Modelo3DSerializer(read_only=True)
+    personalizacion = PersonalizacionSerializer(read_only=True)
 
     class Meta:
         model = Parte
-        fields = ["id", "nombre_parte", "color", "modelo", "personalizacion", "usuario"]
+        fields = [
+            "id",
+            "nombre_parte",
+            "color",
+            "modelo",
+            "modelo_id",
+            "personalizacion",
+            "personalizacion_id",
+            "usuario",
+        ]
+
+    def validate(self, data):
+        modelo = data.get("modelo")
+        personalizacion = data.get("personalizacion")
+        nombre_parte = data.get("nombre_parte")
+        usuario = self.context["request"].user
+
+        if personalizacion and personalizacion.modelo != modelo:
+            raise serializers.ValidationError(
+                "La personalización seleccionada no corresponde al modelo proporcionado."
+            )
+
+        if Parte.objects.filter(
+            nombre_parte=nombre_parte,
+            modelo=modelo,
+            personalizacion=personalizacion,
+            usuario=usuario,
+        ).exists():
+            raise serializers.ValidationError(
+                "Ya existe una parte con este nombre, modelo, personalización y usuario."
+            )
+
+        return data
+
+    def create(self, validated_data):
+        validated_data["usuario"] = self.context["request"].user
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        if instance.usuario != self.context["request"].user:
+            raise serializers.ValidationError(
+                "No tienes permiso para modificar esta parte."
+            )
+
+        validated_data["usuario"] = self.context["request"].user
+        return super().update(instance, validated_data)
+
+
+# _______________________________________________________
+class HelpArticleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HelpArticle
+        fields = "__all__"
+
+
+class FAQSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FAQ
+        fields = "__all__"

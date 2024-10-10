@@ -8,6 +8,7 @@ import { NoAuthGuard } from './auth/no-auth.guard';
 import { HelpComponent } from './shared/components/help/help.component';
 import { AdminGuard } from './core/guard/admin.guard';
 import { SettingsComponent } from './shared/components/settings/settings.component';
+import { UserProfileComponent } from './shared/components/user-profile/user-profile.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent, canActivate: [NoAuthGuard] }, // Ruta para el inicio de sesión
@@ -31,6 +32,11 @@ export const routes: Routes = [
   { path: 'home', component: HomeComponent, canActivate: [AuthGuard] }, // Acceso restringido
   { path: 'help', component: HelpComponent, canActivate: [AuthGuard] }, // Acceso restringido
   { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] }, // Acceso restringido
+  {
+    path: 'perfil/:id',
+    component: UserProfileComponent,
+    canActivate: [AuthGuard],
+  },
   { path: 'settings', component: SettingsComponent, canActivate: [AuthGuard] }, // Acceso restringido
   { path: '', redirectTo: '/home', pathMatch: 'full' }, // Ruta predeterminada
   { path: '**', redirectTo: '/home' }, // En caso de rutas no encontradas

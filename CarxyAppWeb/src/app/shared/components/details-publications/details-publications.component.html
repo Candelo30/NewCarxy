@@ -1,0 +1,237 @@
+<div class="modal fixed inset-0 flex items-center justify-center z-50">
+  <!-- Fondo oscuro del modal -->
+  <div class="modal-overlay absolute inset-0 bg-black opacity-70"></div>
+
+  <!-- Contenido del modal -->
+  <div
+    class="modal-container bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden relative w-full max-w-2xl h-5/6"
+  >
+    <!-- Botón de cerrar -->
+    <button
+      (click)="cerrarDetalle()"
+      class="absolute top-2 right-4 text-gray-400 hover:text-kingfisher-daisy-500 dark:text-gray-300 dark:hover:text-white text-2xl font-bold transition-colors duration-200"
+    >
+      &times;
+    </button>
+
+    <!-- Encabezado de la publicación -->
+    <div class="p-4 bg-gray-100 dark:bg-gray-900">
+      <h2 class="text-lg font-bold text-gray-800 dark:text-white">
+        Publicación de {{ publicacion.usuario_username }}
+      </h2>
+    </div>
+
+    <!-- Contenido de la publicación y comentarios -->
+    <div class="modal-content flex flex-col h-full">
+      <div
+        class="flex-grow overflow-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-800"
+        style="max-height: calc(100% - 140px)"
+      >
+        <!-- Usuario y descripción de la publicación -->
+        <div class="mb-4 flex items-start">
+          <ng-container *ngIf="publicacion.usuario_foto; else initials">
+            <img
+              [src]="publicacion.usuario_foto"
+              alt="Foto de perfil"
+              class="w-12 h-12 rounded-full mr-4"
+            />
+          </ng-container>
+          <ng-template #initials>
+            <div
+              class="w-12 h-12 rounded-full mr-4 flex items-center justify-center"
+              [style.background-color]="selectedColor"
+            >
+              {{ getInitials(publicacion.usuario_username) }}
+            </div>
+          </ng-template>
+
+          <div class="flex-1">
+            <p class="text-gray-800 dark:text-white font-bold text-lg">
+              {{ publicacion.usuario_username }}
+            </p>
+            <p class="text-gray-600 dark:text-gray-400 text-sm">
+              {{ publicacion.fecha_creacion | date : "yyyy-MM-dd HH:mm:ss" }}
+            </p>
+            <p class="text-gray-700 dark:text-gray-300 mt-2">
+              {{ publicacion.descripcion }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Imagen de la publicación -->
+        <div *ngIf="publicacion.imagen" class="mb-4">
+          <img
+            [src]="publicacion.imagen"
+            alt="Imagen de la publicación"
+            class="h-auto rounded-lg"
+          />
+        </div>
+
+        <!-- Sección de comentarios -->
+        <div
+          *ngFor="let comentario of publicacion.comentarios"
+          class="flex items-start space-x-2"
+        >
+          <ng-container
+            *ngIf="comentario.usuario_foto; else comentarioInitials"
+          >
+            <img
+              [src]="comentario.usuario_foto"
+              alt="Foto de perfil"
+              class="w-10 h-10 rounded-full"
+            />
+          </ng-container>
+          <ng-template #comentarioInitials>
+            <div
+              class="w-10 h-10 rounded-full flex items-center justify-center"
+              [style.background-color]="selectedColor"
+            >
+              {{ getInitials(comentario.usuario_username) }}
+            </div>
+          </ng-template>
+          <div>
+            <p class="text-sm text-gray-800 dark:text-white font-bold">
+              {{ comentario.usuario_username }}
+            </p>
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+              {{ comentario.comentario }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal fixed inset-0 flex items-center justify-center z-50">
+        <!-- Fondo oscuro del modal -->
+        <div class="modal-overlay absolute inset-0 bg-black opacity-70"></div>
+
+        <!-- Contenido del modal -->
+        <div
+          class="modal-container bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden relative w-full max-w-2xl h-5/6"
+        >
+          <!-- Botón de cerrar -->
+          <button
+            (click)="cerrarDetalle()"
+            class="absolute top-2 right-4 text-gray-400 hover:text-kingfisher-daisy-500 dark:text-gray-300 dark:hover:text-white text-2xl font-bold transition-colors duration-200"
+          >
+            &times;
+          </button>
+
+          <!-- Encabezado de la publicación -->
+          <div class="p-4 bg-gray-100 dark:bg-gray-900">
+            <h2 class="text-lg font-bold text-gray-800 dark:text-white">
+              Publicación de {{ publicacion.usuario_username }}
+            </h2>
+          </div>
+
+          <!-- Contenido de la publicación y comentarios -->
+          <div class="modal-content flex flex-col h-full">
+            <div
+              class="flex-grow overflow-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-800"
+              style="max-height: calc(100% - 140px)"
+            >
+              <!-- Usuario y descripción de la publicación -->
+              <div class="mb-4 flex items-start">
+                <ng-container *ngIf="publicacion.usuario_foto; else initials">
+                  <img
+                    [src]="publicacion.usuario_foto"
+                    alt="Foto de perfil"
+                    class="w-12 h-12 rounded-full mr-4"
+                  />
+                </ng-container>
+                <ng-template #initials>
+                  <div
+                    class="w-12 h-12 rounded-full mr-4 flex items-center justify-center"
+                    [style.background-color]="selectedColor"
+                  >
+                    {{ getInitials(publicacion.usuario_username) }}
+                  </div>
+                </ng-template>
+
+                <div class="flex-1">
+                  <p class="text-gray-800 dark:text-white font-bold text-lg">
+                    {{ publicacion.usuario_username }}
+                  </p>
+                  <p class="text-gray-600 dark:text-gray-400 text-sm">
+                    {{
+                      publicacion.fecha_creacion | date : "yyyy-MM-dd HH:mm:ss"
+                    }}
+                  </p>
+                  <p class="text-gray-700 dark:text-gray-300 mt-2">
+                    {{ publicacion.descripcion }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Imagen de la publicación -->
+              <div *ngIf="publicacion.imagen" class="mb-4">
+                <img
+                  [src]="publicacion.imagen"
+                  alt="Imagen de la publicación"
+                  class="h-auto rounded-lg"
+                />
+              </div>
+
+              <!-- Sección de comentarios -->
+              <div
+                *ngFor="let comentario of publicacion.comentarios"
+                class="flex items-start space-x-2"
+              >
+                <ng-container
+                  *ngIf="comentario.usuario_foto; else comentarioInitials"
+                >
+                  <img
+                    [src]="comentario.usuario_foto"
+                    alt="Foto de perfil"
+                    class="w-10 h-10 rounded-full"
+                  />
+                </ng-container>
+                <ng-template #comentarioInitials>
+                  <div
+                    class="w-10 h-10 rounded-full flex items-center justify-center"
+                    [style.background-color]="selectedColor"
+                  >
+                    {{ getInitials(comentario.usuario_username) }}
+                  </div>
+                </ng-template>
+                <div>
+                  <p class="text-sm text-gray-800 dark:text-white font-bold">
+                    @if (comentario.usuario_username != userName ) {
+                    <a [routerLink]="['/perfil', comentario.usuario_id]">
+                      {{ comentario.usuario_username }}
+                    </a>
+                    } @else {
+                    <a routerLink="/profile">
+                      {{ comentario.usuario_username }}
+                    </a>
+                    }
+                  </p>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">
+                    {{ comentario.comentario }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sección fija para agregar un nuevo comentario -->
+            <div
+              class="p-4 bg-gray-200 dark:bg-gray-900 flex-shrink-0 gap-1 flex items-center"
+            >
+              <input
+                type="text"
+                [(ngModel)]="comentarioTexto"
+                placeholder="Escribe un comentario..."
+                class="flex-1 p-3 rounded-l border dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-kingfisher-daisy-500 transition duration-150"
+              />
+              <button
+                (click)="agregarComentario()"
+                class="p-3 bg-kingfisher-daisy-500 text-white rounded-r hover:bg-kingfisher-daisy-600 transition duration-200"
+              >
+                Enviar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

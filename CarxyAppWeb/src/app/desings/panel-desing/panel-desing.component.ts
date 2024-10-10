@@ -11,11 +11,19 @@ import {
 } from '@angular/forms';
 import { Modelo3dService } from '../../core/services/modelo3d.service';
 import { UserService } from '../../core/services/user.service';
-
+import { NotificationService } from '../../core/services/notification.service';
+import { Notification } from '../../interface/notifications/notification.model';
+import { NotificationsComponent } from '../../shared/components/notifications/notifications.component';
 @Component({
   selector: 'app-panel-desing',
   standalone: true,
-  imports: [HeaderComponent, CommonModule, RouterLink, FormsModule],
+  imports: [
+    HeaderComponent,
+    CommonModule,
+    RouterLink,
+    FormsModule,
+    NotificationsComponent,
+  ],
   templateUrl: './panel-desing.component.html',
   styleUrl: './panel-desing.component.css',
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
@@ -42,7 +50,8 @@ export class PanelDesingComponent implements OnInit {
     private modelo3DService: Modelo3dService, // Servicio que debes haber creado
     private personalizacionService: PersonalizacionService,
     private router: Router,
-    private UserData: UserService
+    private UserData: UserService,
+    private notificationService: NotificationService
   ) {}
 
   openModal() {
@@ -76,13 +85,20 @@ export class PanelDesingComponent implements OnInit {
         modelo_id: modeloId, // Solo el ID del modelo
       };
 
-      console.log(personalizationData);
       this.personalizacionService
         .crearPersonalizacion(personalizationData)
         .subscribe(
           (response) => {
             this.closeModal();
             this.loadPersonalizaciones(); // Recargar la lista de personalizaciones
+            const warningNotification: Notification = {
+              type: 'alert',
+              message: 'Has creado una nueva personalización.',
+              style: 'warning',
+              duration: 3000,
+              dismissible: true,
+            };
+            this.notificationService.addNotification(warningNotification);
           },
           (error) => {
             console.error('Error creando la personalización', error);
@@ -114,7 +130,6 @@ export class PanelDesingComponent implements OnInit {
     this.personalizacionService.getPersonalizaciones().subscribe(
       (data) => {
         this.listCartsDesing = data;
-        console.log('Estos son los modelos', data);
       },
       (error) => {
         console.error('Error al cargar personalizaciones:', error);
@@ -123,9 +138,7 @@ export class PanelDesingComponent implements OnInit {
   }
 
   // Métodos para acciones en los iconos
-  copyCar(id: number): void {
-    console.log('Copia del coche con ID:', id);
-  }
+  copyCar(id: number): void {}
 
   editCar(id: number): void {
     console.log('Edición del coche con ID:', id);
@@ -133,15 +146,18 @@ export class PanelDesingComponent implements OnInit {
   }
 
   deleteCar(id: number): void {
-    console.log('Eliminación del coche con ID:', id);
-    this.personalizacionService.eliminarPersonalizacion(id).subscribe(
-      () => {
-        this.loadPersonalizaciones(); // Recargar la lista después de eliminar
-      },
-      (error) => {
-        console.error('Error al eliminar personalización:', error);
-      }
-    );
+    const req = confirm('Seguro que quieres borrara la personalización');
+    if (req) {
+      this.personalizacionService.eliminarPersonalizacion(id).subscribe(
+        () => {
+          this.loadPersonalizaciones(); // Recargar la lista después de eliminar
+        },
+        (error) => {
+          console.error('Error al eliminar personalización:', error);
+        }
+      );
+    } else {
+    }
   }
 
   viewPreview(id: number): void {

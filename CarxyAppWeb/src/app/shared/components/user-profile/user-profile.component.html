@@ -1,0 +1,178 @@
+<app-header></app-header>
+
+<!-- Contenedor Principal -->
+<div
+  class="pt-2 px-4 w-full overflow-y-auto bg-gray-50 dark:bg-gray-900 transition-colors duration-300"
+  style="height: calc(100vh - 80px)"
+>
+  <!-- Portada con imagen de perfil -->
+  <div class="relative h-48 md:h-56 bg-kingfisher-daisy-700">
+    <div
+      class="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2"
+    >
+      <ng-container *ngIf="user.foto_perfil; else noFoto">
+        <img
+          id="profile-pic"
+          class="w-32 h-32 rounded-full cursor-pointer border-2 border-kingfisher-daisy-500 object-cover"
+          [src]="user.foto_perfil"
+          [alt]="user.username ? getInitials(user.username) : 'Foto de perfil'"
+        />
+      </ng-container>
+      <ng-template #noFoto>
+        <div
+          class="w-32 h-32 rounded-full cursor-pointer border-2 border-kingfisher-daisy-500 flex items-center justify-center text-white text-lg"
+          [style.background-color]="selectedColor"
+        >
+          {{ getInitials(user.username) }}
+        </div>
+      </ng-template>
+    </div>
+  </div>
+
+  <!-- Contenido principal -->
+  <div class="container mx-auto px-4 mt-16 md:mt-24">
+    <!-- Contenedor principal de dos columnas -->
+    <div class="flex flex-col md:flex-row gap-6">
+      <!-- Información del usuario -->
+      <div
+        class="w-full md:w-2/6 h-min bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 transition-colors duration-300"
+      >
+        <div class="text-center md:text-left">
+          <!-- Icono de administrador (condicional) -->
+          <ng-container *ngIf="user.is_staff">
+            <div class="flex items-center justify-center mb-4">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                style="fill: currentColor"
+              >
+                <path
+                  d="M20.995 6.9a.998.998 0 0 0-.548-.795l-8-4a1 1 0 0 0-.895 0l-8 4a1.002 1.002 0 0 0-.547.795c-.011.107-.961 10.767 8.589 15.014a.987.987 0 0 0 .812 0c9.55-4.247 8.6-14.906 8.589-15.014zM12 19.897C5.231 16.625 4.911 9.642 4.966 7.635L12 4.118l7.029 3.515c.037 1.989-.328 9.018-7.029 12.264z"
+                ></path>
+                <path
+                  d="m11 12.586-2.293-2.293-1.414 1.414L11 15.414l5.707-5.707-1.414-1.414z"
+                ></path>
+              </svg>
+              <p class="text-sm text-gray-500 dark:text-gray-400 ml-2">
+                Administración
+              </p>
+            </div>
+          </ng-container>
+
+          <!-- Nombre y detalles del usuario -->
+          <h2
+            class="text-xl font-bold text-kingfisher-daisy-600 dark:text-kingfisher-daisy-400"
+          >
+            {{ user.first_name }} {{ user.last_name }}
+          </h2>
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            {{ "@" + user.username }}
+          </p>
+          <hr
+            class="my-4 border-0 h-1 bg-gradient-to-r from-kingfisher-daisy-400 via-kingfisher-daisy-500 to-kingfisher-daisy-600 rounded-full"
+          />
+          <div class="text-gray-600 dark:text-gray-300 mt-4">
+            <p>
+              Correo Electrónico: <strong>{{ user.email }}</strong>
+            </p>
+            <p>
+              Fecha de creación:
+              <strong>{{ user.date_joined | date : "yyyy-MM-dd" }}</strong>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección de publicaciones -->
+      <div
+        class="w-full md:w-4/6 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 transition-colors duration-300"
+      >
+        <h3
+          class="text-xl font-semibold text-kingfisher-daisy-700 dark:text-kingfisher-daisy-300 mb-4"
+        >
+          Publicaciones
+        </h3>
+
+        <!-- Lista de publicaciones -->
+        <div class="space-y-4">
+          <div
+            *ngFor="let publicacion of publicaciones"
+            class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg shadow transition-colors duration-300"
+          >
+            <!-- Usuario de la publicación -->
+            <div class="flex items-center mb-4">
+              <ng-container *ngIf="publicacion.usuario_foto; else noFotoPub">
+                <img
+                  [src]="publicacion.usuario_foto"
+                  alt="Foto de perfil"
+                  class="w-10 h-10 rounded-full mr-4"
+                />
+              </ng-container>
+              <ng-template #noFotoPub>
+                <div
+                  class="w-10 h-10 rounded-full mr-4 flex items-center justify-center"
+                  [style.background-color]="selectedColor"
+                >
+                  {{ getInitials(publicacion.usuario_username) }}
+                </div>
+              </ng-template>
+              <div>
+                <p class="text-gray-800 dark:text-white font-bold">
+                  {{ publicacion.usuario_username }}
+                </p>
+                <p class="text-gray-600 dark:text-gray-400 text-sm">
+                  {{
+                    publicacion.fecha_creacion | date : "yyyy-MM-dd HH:mm:ss"
+                  }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Descripción de la publicación -->
+            <p class="text-gray-700 dark:text-gray-300 mb-4">
+              {{ publicacion.descripcion }}
+            </p>
+
+            <!-- Imagen de la publicación -->
+            <div *ngIf="publicacion.imagen" class="mb-4">
+              <img
+                [src]="publicacion.imagen"
+                alt="Imagen de la publicación"
+                class="h-auto rounded-lg"
+              />
+            </div>
+
+            <!-- Reacciones -->
+            <div class="flex items-center space-x-4">
+              <button
+                class="text-kingfisher-daisy-500 hover:text-kingfisher-daisy-700"
+                (click)="toggleLike(publicacion)"
+              >
+                ❤️ {{ publicacion.megusta }}
+                {{ publicacion.likedByUser ? "Quitar Me gusta" : "Me gusta" }}
+              </button>
+              <button
+                (click)="seleccionarPublicacion(publicacion)"
+                class="text-kingfisher-daisy-500 hover:text-kingfisher-daisy-700"
+              >
+                💬 {{ publicacion.comentarios.length }} comentarios
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+@if (selectedPublicacion) {
+<app-details-publications
+  [publicacion]="selectedPublicacion"
+  [selectedColor]="selectedColor"
+  (closeDetail)="cerrarDetalle()"
+  (comentarioAgregado)="loadPublication()"
+>
+</app-details-publications>
+}

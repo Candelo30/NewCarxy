@@ -37,11 +37,11 @@ export class PersonalizacionService {
 
   // Modificar una personalización existente (PUT)
   modificarPersonalizacion(id: number, data: any): Observable<any> {
-    return this.http.put<any>(`${this.apiUrl}${id}/`, data);
+    return this.http.put<any>(`${this.apiUrl}/personalizaciones/${id}/`, data);
   }
 
   // Eliminar una personalización (DELETE)
   eliminarPersonalizacion(id: number): Observable<any> {
-    return this.http.delete<any>(`${this.apiUrl}${id}/`);
+    return this.http.delete<any>(`${this.apiUrl}/personalizaciones/${id}/`);
   }
 }

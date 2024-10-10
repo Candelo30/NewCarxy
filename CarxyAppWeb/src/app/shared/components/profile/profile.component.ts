@@ -5,7 +5,6 @@ import { StatesService } from '../../../core/services/states.service';
 
 import { LoadingButtonComponent } from '../loading-button/loading-button.component';
 import { PublicationsService } from '../../../core/services/publications.service';
-import { response } from 'express';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -14,6 +13,10 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { DetailsPublicationsComponent } from '../details-publications/details-publications.component';
+import { NotificationService } from '../../../core/services/notification.service';
+import { Notification } from '../../../interface/notifications/notification.model';
+import { NotificationsComponent } from '../notifications/notifications.component';
 
 @Component({
   selector: 'app-profile',
@@ -25,6 +28,8 @@ import {
     FormsModule,
     CommonModule,
     ReactiveFormsModule,
+    DetailsPublicationsComponent,
+    NotificationsComponent,
   ],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css',
@@ -49,17 +54,30 @@ export class ProfileComponent implements OnInit {
   userProfilePicture = '';
   isLoading = true;
   publicaciones: any = [];
+  selectedPublicacion: any = null; // Almacena la publicación seleccionada
 
   constructor(
     private UserData: UserService,
     private state: StatesService,
     private PublicationData: PublicationsService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private notificationService: NotificationService
   ) {
     this.publicacionForm = this.fb.group({
       descripcion: ['', [Validators.required, Validators.maxLength(255)]],
       imagen: [null],
     });
+  }
+
+  // Maneja la selección de una publicación para mostrar el detalle
+  seleccionarPublicacion(publicacion: any): void {
+    this.selectedPublicacion = publicacion;
+    console.log(this.selectedPublicacion);
+  }
+
+  // Cerrar el detalle de la publicación
+  cerrarDetalle(): void {
+    this.selectedPublicacion = null;
   }
 
   openModal() {
@@ -108,10 +126,19 @@ export class ProfileComponent implements OnInit {
       // Enviar el FormData a través del servicio
       this.PublicationData.postPublications(formData).subscribe({
         next: (response) => {
-          console.log('Publicación creada con éxito', response);
           this.closeModal(); // Cierra el modal si el post es exitoso
-          alert('Sus datos han sido enviados correctamente');
-          window.location.reload();
+
+          const warningNotification: Notification = {
+            type: 'alert',
+            message: 'Has hecho tu publicación con éxito.',
+            style: 'success',
+            duration: 3000,
+            dismissible: true,
+          };
+          this.notificationService.addNotification(warningNotification);
+          setTimeout(() => {
+            window.location.reload();
+          }, 4000);
         },
         error: (err) => {
           console.error('Error creando la publicación', err);
@@ -128,12 +155,62 @@ export class ProfileComponent implements OnInit {
     this.loadPublication();
   }
 
-  private loadPublication(): void {
+  // userDataPublications
+
+  loadPublication(): void {
+    this.isLoading = true;
+
+    // Llamada al servicio para cargar las publicaciones
     this.PublicationData.loadAllResources().subscribe({
       next: (response) => {
-        const data = response.userDataPublications;
-        this.publicaciones = data;
-        console.log('Los datos de la publicación', data);
+        const data = response.userDataPublications; // Suponemos que las publicaciones están en esta propiedad
+        this.publicaciones = data; // Asignamos las publicaciones a la variable del componente
+
+        console.log(data);
+
+        // Aquí establecemos `likedByUser` basado en la respuesta del servidor
+        this.publicaciones.forEach((pub: any) => {
+          pub.likedByUser = pub.liked_by_user; // Cambiamos esto para leer directamente desde cada publicación
+        });
+        this.isLoading = false; // Desactivamos el indicador de carga
+
+        // Si hay una publicación seleccionada, actualizamos la referencia con los nuevos datos
+        if (this.selectedPublicacion) {
+          const updatedPublicacion = this.publicaciones.find(
+            (pub: any) => pub.id === this.selectedPublicacion.id
+          );
+
+          // Actualizamos la publicación seleccionada solo si la encontramos en los datos recargados
+          if (updatedPublicacion) {
+            this.selectedPublicacion = updatedPublicacion;
+          } else {
+            // Si la publicación seleccionada ya no existe en la lista, deseleccionamos
+            this.selectedPublicacion = null;
+          }
+        }
+      },
+      error: (err) => {
+        console.error('Error al cargar las publicaciones:', err);
+        this.isLoading = false; // Desactivamos el indicador de carga incluso si hay un error
+      },
+    });
+  }
+
+  toggleLike(publicacion: any): void {
+    this.PublicationData.likePublicacion(publicacion.id).subscribe({
+      next: (response) => {
+        // Manejar la respuesta del servidor
+        if (response.status === 'liked') {
+          publicacion.megusta += 1; // Aumentar el contador de "me gusta"
+          publicacion.likedByUser = true; // Actualizar estado de "me gusta"
+        } else {
+          publicacion.megusta -= 1; // Disminuir el contador de "me gusta"
+          publicacion.likedByUser = false; // Actualizar estado de "me gusta"
+        }
+      },
+      error: (err) => {
+        console.error('Error al cambiar el like:', err);
+        // Manejo de error, tal vez mostrar un mensaje al usuario
       },
     });
   }

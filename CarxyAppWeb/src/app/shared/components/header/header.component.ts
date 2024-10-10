@@ -1,16 +1,16 @@
 import { Component, ElementRef, HostListener, OnInit } from '@angular/core';
-import { CookieService } from 'ngx-cookie-service';
 import { AuthService } from '../../../auth/auth.service';
 import { UserService } from '../../../core/services/user.service';
 import { LoadingButtonComponent } from '../loading-button/loading-button.component';
 import { StatesService } from '../../../core/services/states.service';
-import { Subject, takeUntil } from 'rxjs';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, LoadingButtonComponent],
+  imports: [RouterLink, LoadingButtonComponent, FormsModule, CommonModule],
   templateUrl: './header.component.html',
   styleUrl: './header.component.css',
 })
@@ -21,9 +21,11 @@ export class HeaderComponent implements OnInit {
   roleUser = false;
   selectedColor: string = '';
   isLoading = false;
+  searchTerm: string = ''; // Para almacenar la entrada de búsqueda
+  users: any[] = []; // Todos los usuarios
+  filteredUsers: any[] = []; // Usuarios filtrados
 
   constructor(
-    private cookieService: CookieService,
     private elRef: ElementRef,
     private authService: AuthService,
     private UserData: UserService,
@@ -40,6 +42,7 @@ export class HeaderComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadUserData();
+    this.loadAllUsers();
     this.states.getColor().subscribe((response) => {
       this.selectedColor = response;
     });
@@ -71,5 +74,31 @@ export class HeaderComponent implements OnInit {
 
   logout() {
     this.authService.logout();
+  }
+
+  // Método para cargar todos los usuarios
+  private loadAllUsers(): void {
+    this.UserData.DataAllUsers().subscribe((data) => {
+      this.users = data; // Guarda todos los usuarios
+      this.filteredUsers = data; // Inicialmente, mostrar todos los usuarios
+      console.log('Datos filtrados', this.filteredUsers);
+    });
+  }
+
+  // Método para filtrar usuarios
+  filterUsers(): void {
+    // Solo filtra si hay un término de búsqueda
+    if (this.searchTerm && this.searchTerm.trim() !== '') {
+      this.filteredUsers = this.users.filter(
+        (user) =>
+          user.username.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+          (user.is_staff ? 'admin' : 'user').includes(
+            this.searchTerm.toLowerCase()
+          )
+      );
+    } else {
+      // Si no hay término de búsqueda, no mostrar ningún usuario filtrado
+      this.filteredUsers = [];
+    }
   }
 }

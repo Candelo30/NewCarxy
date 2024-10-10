@@ -1,0 +1,16 @@
+input::file-selector-button {
+  color-scheme: light dark;
+  font-weight: bold;
+  padding: 0.5em;
+  border: transparent;
+  border-radius: 3px;
+  /* Ajustes de colores utilizando la paleta definida en Tailwind */
+  background-color: #2563eb; /* kingfisher-daisy 500 */
+  color: white;
+  border-color: #1d4ed8; /* kingfisher-daisy 700 */
+}
+
+input::file-selector-button:hover {
+  background-color: #1d4ed8; /* kingfisher-daisy 400 */
+  border: transparent;
+}

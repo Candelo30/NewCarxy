@@ -17,10 +17,24 @@ class Publicacion(models.Model):
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     imagen = models.ImageField(upload_to="img/", null=True, blank=True)
     descripcion = models.TextField()
-    megusta = models.IntegerField(default=0)
+    megusta = models.IntegerField(default=0)  # Contador de "Me gusta"
 
     def __str__(self):
         return f"Publicación: {self.descripcion} por {self.usuario.username}"
+
+
+class Like(models.Model):
+    usuario = models.ForeignKey(Usuarios, on_delete=models.CASCADE)
+    publicacion = models.ForeignKey(Publicacion, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = (
+            "usuario",
+            "publicacion",
+        )  # Asegura que un usuario solo pueda dar like una vez por publicación
+
+    def __str__(self):
+        return f"{self.usuario.username} likes {self.publicacion.descripcion}"
 
 
 class Comentario(models.Model):
@@ -35,6 +49,9 @@ class Comentario(models.Model):
 
     def __str__(self):
         return f"Comentario de {self.usuario.username} en {self.publicacion}"
+
+
+# __________________________________
 
 
 class Modelo3D(models.Model):
@@ -65,6 +82,7 @@ class Personalizacion(models.Model):
         return f"{self.nombre_personalizacion} - {self.modelo.nombre_modelo}"
 
 
+# Modelos
 class Parte(models.Model):
     nombre_parte = models.CharField(max_length=100)
     color = models.CharField(max_length=50)
@@ -78,7 +96,45 @@ class Parte(models.Model):
         Usuarios, on_delete=models.CASCADE, related_name="partes"
     )
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["nombre_parte", "modelo", "personalizacion", "usuario"],
+                name="unique_parte_per_usuario",
+            )
+        ]
+
     def __str__(self):
         return (
             f"{self.nombre_parte} ({self.color}) del modelo {self.modelo.nombre_modelo}"
         )
+
+
+# ________________________________________________
+
+
+class HelpArticle(models.Model):
+    title = models.CharField(max_length=255)
+    summary = models.TextField()
+    content = models.TextField()
+    link = models.URLField(max_length=500, blank=True, null=True)
+    image = models.ImageField(
+        upload_to="help_articles/", blank=True, null=True
+    )  # Para almacenar imágenes
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.title
+
+
+class FAQ(models.Model):
+    question = models.CharField(max_length=255)
+    answer = models.TextField()
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.question

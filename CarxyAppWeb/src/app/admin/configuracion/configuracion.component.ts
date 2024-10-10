@@ -1,6 +1,8 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { HeaderComponent } from '../../shared/components/header/header.component';
 import { RouterLink } from '@angular/router';
+import { Notification } from '../../interface/notifications/notification.model';
+
 import {
   FormBuilder,
   FormGroup,
@@ -13,11 +15,19 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { CommonModule } from '@angular/common';
 import { UserService } from '../../core/services/user.service';
+import { NotificationService } from '../../core/services/notification.service';
+import { NotificationsComponent } from '../../shared/components/notifications/notifications.component';
 
 @Component({
   selector: 'app-configuracion',
   standalone: true,
-  imports: [HeaderComponent, RouterLink, ReactiveFormsModule, CommonModule],
+  imports: [
+    HeaderComponent,
+    RouterLink,
+    ReactiveFormsModule,
+    CommonModule,
+    NotificationsComponent,
+  ],
   templateUrl: './configuracion.component.html',
   styleUrl: './configuracion.component.css',
 })
@@ -41,7 +51,8 @@ export class ConfiguracionComponent implements OnInit {
   constructor(
     private UserData: UserService,
     private fb: FormBuilder,
-    private modelo3DService: Modelo3dService // Servicio que debes haber creado
+    private modelo3DService: Modelo3dService, // Servicio que debes haber creado
+    private notificationService: NotificationService // Inyección del servicio de notificaciones
   ) {
     // Inicializamos el formulario0
     this.modeloForm = this.fb.group({
@@ -184,18 +195,48 @@ export class ConfiguracionComponent implements OnInit {
         'nombre_modelo',
         this.modeloForm.get('nombre_modelo')?.value
       );
-
       formData.append('usuario', this.idUser);
       formData.append('archivo_modelo', this.selectedFile);
 
       this.modelo3DService.createModelo(formData).subscribe(
         (response) => {
           console.log('Modelo subido exitosamente', response);
+
+          // Agregar una notificación de éxito
+          const successNotification: Notification = {
+            type: 'notification',
+            message: 'Modelo subido exitosamente',
+            style: 'success',
+            duration: 3000, // Duración en milisegundos
+            dismissible: true,
+          };
+          this.notificationService.addNotification(successNotification);
         },
         (error) => {
           console.error('Error al subir el modelo', error);
+
+          // Agregar una notificación de error
+          const errorNotification: Notification = {
+            type: 'alert',
+            message:
+              'Error al subir el modelo: ' + (error.message || 'Desconocido'),
+            style: 'error',
+            duration: 5000, // Duración en milisegundos
+            dismissible: true,
+          };
+          this.notificationService.addNotification(errorNotification);
         }
       );
+    } else {
+      // Notificación si el formulario no es válido
+      const warningNotification: Notification = {
+        type: 'alert',
+        message: 'Por favor, completa todos los campos requeridos.',
+        style: 'warning',
+        duration: 3000,
+        dismissible: true,
+      };
+      this.notificationService.addNotification(warningNotification);
     }
   }
 }

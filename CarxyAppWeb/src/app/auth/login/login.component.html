@@ -1,3 +1,7 @@
+<app-loading-button [isLoading]="isLoading"></app-loading-button>
+<app-notifications></app-notifications>
+
+@if (!isLoading) {
 <div
   class="min-h-screen flex justify-center items-center bg-gradient-to-l from-kingfisher-daisy-200 dark:from-kingfisher-daisy-700 to-kingfisher-daisy-900"
 >
@@ -55,3 +59,5 @@
     </form>
   </div>
 </div>
+
+}

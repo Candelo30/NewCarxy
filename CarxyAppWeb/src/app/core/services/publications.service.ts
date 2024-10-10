@@ -25,6 +25,28 @@ export class PublicationsService {
     return this.http.get('http://127.0.0.1:8000/api/allPublication/');
   }
 
+  dataAllPublicationsForUser(id: number): Observable<any> {
+    return this.http.get(
+      `http://127.0.0.1:8000/api/allPublication/?user_id=${id}/`
+    );
+  }
+
+  likePublicacion(publicacionId: number): Observable<any> {
+    return this.http.post(
+      `http://127.0.0.1:8000/api/allPublication/${publicacionId}/like/`,
+      {}
+    );
+  }
+
+  unlikePublicacion(publicacionId: number): Observable<any> {
+    return this.http.post(
+      `http://127.0.0.1:8000/api/allPublication/${publicacionId}/unlike/`,
+      {}
+    );
+  }
+  PostCommend(data: any): Observable<any> {
+    return this.http.post('http://127.0.0.1:8000/comentarios/', data);
+  }
   // Método para esperar que todos los datos sean cargados
   loadAllResources(): Observable<any> {
     // Si tienes otras peticiones, agrégalas a `forkJoin`

@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { HeaderComponent } from '../header/header.component';
+import { HelpService } from '../../../core/services/help.service';
 
 @Component({
   selector: 'app-help',
@@ -10,34 +11,32 @@ import { HeaderComponent } from '../header/header.component';
   styleUrl: './help.component.css',
 })
 export class HelpComponent {
-  articles = [
-    {
-      title: 'Cómo empezar con la aplicación',
-      content:
-        'Este artículo te guiará a través de los pasos iniciales para comenzar a usar la aplicación...',
-      link: '#',
-    },
-    {
-      title: 'Consejos para publicar contenido',
-      content:
-        'Aquí hay algunos consejos sobre cómo crear publicaciones efectivas...',
-      link: '#',
-    },
-  ];
+  articles: any[] = [];
+  faqs: any[] = [];
 
-  faqs = [
-    {
-      question: '¿Cómo crear un nuevo usuario?',
-      answer:
-        'Para crear un nuevo usuario, dirígete a la sección de usuarios y haz clic en "Agregar Usuario".',
-    },
-    {
-      question: '¿Cómo eliminar una publicación?',
-      answer: 'Selecciona el botón "Eliminar" junto a la publicación deseada.',
-    },
-    {
-      question: '¿Cómo cambiar mi contraseña?',
-      answer: 'Ve a tu perfil y selecciona "Cambiar Contraseña".',
-    },
-  ];
+  constructor(private helpService: HelpService) {}
+
+  ngOnInit(): void {
+    this.loadHelpData();
+  }
+
+  loadHelpData(): void {
+    // Cargar artículos desde la API
+    this.helpService.getArticles().subscribe(
+      (data) => {
+        this.articles = data;
+        console.log(data);
+      },
+      (error) => console.error('Error loading articles', error)
+    );
+
+    // Cargar FAQs desde la API
+    this.helpService.getFAQs().subscribe(
+      (data) => {
+        this.faqs = data;
+        console.log(data);
+      },
+      (error) => console.error('Error loading FAQs', error)
+    );
+  }
 }

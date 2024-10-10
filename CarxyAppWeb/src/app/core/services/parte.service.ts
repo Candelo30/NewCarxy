@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class ParteService {
-  private apiUrl = 'http://localhost:8000/api'; // Cambia esto a tu URL de API
+  private apiUrl = 'http://localhost:8000/api';
 
   constructor(private http: HttpClient) {}
 
@@ -16,7 +16,7 @@ export class ParteService {
   }
 
   // Guardar partes personalizadas
-  savePartes(partes: any[]): Observable<any> {
+  savePartes(partes: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/partes/`, partes);
   }
 }

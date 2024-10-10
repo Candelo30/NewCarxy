@@ -1,5 +1,5 @@
 <header
-  class="w-full p-3 justify-between shadow-sm bg-slate-200 dark:bg-slate-950 flex items-center"
+  class="w-full p-3 flex items-center z-50 justify-between shadow-sm bg-slate-200 dark:bg-slate-950 relative"
 >
   <!-- Logo -->
   <div class="flex items-center text-slate-950 dark:text-white font-bold">
@@ -7,13 +7,104 @@
     <span class="text-xl">arxy</span>
   </div>
 
+  <!-- Contenedor para el input de búsqueda y la lista -->
+  <div class="relative w-60 mx-auto">
+    <!-- Barra de búsqueda -->
+    <input
+      type="text"
+      [(ngModel)]="searchTerm"
+      (input)="filterUsers()"
+      placeholder="Buscar usuarios..."
+      class="border p-2 rounded w-full shadow-sm focus:outline-none focus:ring-2 focus:ring-kingfisher-daisy-500 dark:bg-slate-800 dark:text-white dark:border-slate-600 dark:placeholder-slate-400"
+    />
+
+    <!-- Lista de usuarios filtrados -->
+    <ul
+      *ngIf="searchTerm.trim() !== '' && filteredUsers.length > 0"
+      class="absolute z-20 bg-white dark:bg-slate-900 rounded-md shadow-lg mt-2 w-full max-h-60 overflow-y-auto border border-gray-300 dark:border-slate-700"
+    >
+      <li
+        *ngFor="let user of filteredUsers"
+        class="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 flex justify-between items-center"
+      >
+        @if (userName != user.username) {
+        <a
+          [routerLink]="['/perfil', user.id]"
+          class="text-slate-900 dark:text-slate-200 flex-1 flex items-center gap-1"
+        >
+          <!-- Imagen de perfil o iniciales -->
+          <div
+            class="w-6 h-6 rounded-full cursor-pointer border-2 border-kingfisher-daisy-500 flex items-center justify-center text-white text-lg"
+            [style.background-color]="!user.foto_perfil ? selectedColor : ''"
+            (click)="ToggleMenu()"
+          >
+            <img
+              id="profile-pic"
+              class="w-6 h-6 rounded-full object-cover object-center"
+              [src]="user.foto_perfil ? user.foto_perfil : ''"
+              [alt]="
+                user.username ? getInitials(user.username) : 'Foto de perfil'
+              "
+              *ngIf="user.foto_perfil; else initialsTemplate"
+            />
+            <ng-template #initialsTemplate>{{
+              getInitials(user.username)
+            }}</ng-template>
+          </div>
+
+          {{ user.username }}
+          <span
+            *ngIf="user.is_staff"
+            class="text-sm text-gray-500 dark:text-slate-400"
+            >(Admin)</span
+          >
+        </a>
+
+        } @else {
+
+        <a
+          routerLink="/profile"
+          class="text-slate-900 dark:text-slate-200 flex-1 flex items-center gap-1"
+        >
+          <!-- Imagen de perfil o iniciales -->
+          <div
+            class="w-6 h-6 rounded-full cursor-pointer border-2 border-kingfisher-daisy-500 flex items-center justify-center text-white text-lg"
+            [style.background-color]="!user.foto_perfil ? selectedColor : ''"
+            (click)="ToggleMenu()"
+          >
+            <img
+              id="profile-pic"
+              class="w-6 h-6 rounded-full object-cover object-center"
+              [src]="user.foto_perfil ? user.foto_perfil : ''"
+              [alt]="
+                user.username ? getInitials(user.username) : 'Foto de perfil'
+              "
+              *ngIf="user.foto_perfil; else initialsTemplate"
+            />
+            <ng-template #initialsTemplate>{{
+              getInitials(user.username)
+            }}</ng-template>
+          </div>
+
+          {{ user.username }}
+          <span
+            *ngIf="user.is_staff"
+            class="text-sm text-gray-500 dark:text-slate-400"
+            >(Admin)</span
+          >
+        </a>
+        }
+      </li>
+    </ul>
+  </div>
+
   <nav class="flex items-center space-x-6">
     <!-- Items del menú de navegación -->
-
     <a
       routerLink="/home"
       class="cursor-pointer text-slate-950 dark:text-white hover:text-kingfisher-daisy-500 flex items-center gap-1"
-      ><svg
+    >
+      <svg
         xmlns="http://www.w3.org/2000/svg"
         width="24"
         height="24"
@@ -22,13 +113,14 @@
       >
         <path
           d="M12.71 2.29a1 1 0 0 0-1.42 0l-9 9a1 1 0 0 0 0 1.42A1 1 0 0 0 3 13h1v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7h1a1 1 0 0 0 1-1 1 1 0 0 0-.29-.71zM6 20v-9.59l6-6 6 6V20z"
-        ></path></svg
-      >Inicio</a
-    >
+        ></path>
+      </svg>
+    </a>
     <a
       routerLink="/design"
       class="cursor-pointer text-slate-950 dark:text-white hover:text-kingfisher-daisy-500 flex items-center gap-1"
-      ><svg
+    >
+      <svg
         xmlns="http://www.w3.org/2000/svg"
         width="24"
         height="24"
@@ -37,32 +129,29 @@
       >
         <path
           d="M8.707 19.707 18 10.414 13.586 6l-9.293 9.293a1.003 1.003 0 0 0-.263.464L3 21l5.242-1.03c.176-.044.337-.135.465-.263zM21 7.414a2 2 0 0 0 0-2.828L19.414 3a2 2 0 0 0-2.828 0L15 4.586 19.414 9 21 7.414z"
-        ></path></svg
-      >Personalización</a
-    >
+        ></path>
+      </svg>
+    </a>
 
     <!-- Foto de perfil -->
     <div class="relative">
-      <!-- Imagen de perfil -->
-      <!-- En caso de que no haya imagen, muestra iniciales -->
-      @if(!userProfilePicture){
+      <!-- Imagen de perfil o iniciales -->
       <div
         class="w-14 h-14 rounded-full cursor-pointer border-2 border-kingfisher-daisy-500 flex items-center justify-center text-white text-lg"
-        [style.background-color]="selectedColor"
-        (click)="ToggleMenu()"
-      >
-        {{ getInitials(userName) }}
-      </div>
-      } @else {
-      <img
-        id="profile-pic"
-        class="w-14 h-14 rounded-full cursor-pointer border-2 border-kingfisher-daisy-500 object-cover object-center"
-        [src]="userProfilePicture ? userProfilePicture : ''"
-        [alt]="userName ? getInitials(userName) : 'Foto de perfil'"
         [style.background-color]="!userProfilePicture ? selectedColor : ''"
         (click)="ToggleMenu()"
-      />}
+      >
+        <img
+          id="profile-pic"
+          class="w-14 h-14 rounded-full object-cover object-center"
+          [src]="userProfilePicture ? userProfilePicture : ''"
+          [alt]="userName ? getInitials(userName) : 'Foto de perfil'"
+          *ngIf="userProfilePicture; else initialsTemplate"
+        />
+        <ng-template #initialsTemplate>{{ getInitials(userName) }}</ng-template>
+      </div>
 
+      <!-- Menú desplegable -->
       <!-- Menu desplegable -->
       @if(isOpenMenu){
       <div
@@ -152,6 +241,7 @@
           Ayuda</a
         >
         <a
+          routerLink="/settings"
           class="cursor-pointer flex items-center gap-1 px-4 py-2 text-sm text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-slate-900"
         >
           <svg

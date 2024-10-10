@@ -6,6 +6,7 @@ from .views import *
 
 router = DefaultRouter()
 router.register(r"usuarios", UsuarioViewSet, basename="usuario")
+
 router.register(r"publicaciones", PublicacionUsuarioViewSet, basename="publicaciones")
 router.register(
     r"allPublication", PublicacionPublicaViewSet, basename="Allpublications"
@@ -15,7 +16,7 @@ router.register(r"modelos3d", Modelo3DViewSet)
 router.register(
     r"personalizaciones", PersonalizacionViewSet, basename="Personalizaciones"
 )
-router.register(r"partes", ParteViewSet)
+router.register(r"partes", ParteViewSet, basename="parte")
 
 
 urlpatterns = router.urls

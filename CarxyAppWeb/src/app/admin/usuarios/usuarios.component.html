@@ -1,5 +1,6 @@
 <app-header></app-header>
 
+<app-notifications></app-notifications>
 <main
   class="px-4 mt-4 w-full h-screen overflow-auto"
   style="height: calc(100vh - 136px)"
@@ -13,37 +14,25 @@
       Gestión de Usuarios
     </h1>
 
-    <!-- Navegación Principal -->
-    <nav class="mb-6">
-      <ul class="flex space-x-2">
-        <li>
-          <a
-            routerLink="/admin/"
-            class="inline-flex items-center px-4 py-2 bg-kingfisher-daisy-600 text-white rounded-md shadow-md hover:bg-kingfisher-daisy-500 transition duration-200"
-            aria-label="Volver al Dashboard"
-          >
-            Dashboard
-          </a>
-        </li>
-        <li>
-          <a
-            routerLink="/admin/usuarios"
-            class="inline-flex items-center px-4 py-2 bg-kingfisher-daisy-600 text-white rounded-md shadow-md hover:bg-kingfisher-daisy-500 transition duration-200"
-            aria-label="Gestionar Usuarios"
-          >
-            Gestionar Usuarios
-          </a>
-        </li>
-        <li>
-          <a
-            routerLink="/admin/configuracion"
-            class="inline-flex items-center px-4 py-2 bg-kingfisher-daisy-600 text-white rounded-md shadow-md hover:bg-kingfisher-daisy-500 transition duration-200"
-            aria-label="Configuraciones"
-          >
-            Configuraciones
-          </a>
-        </li>
-      </ul>
+    <nav class="mb-8 flex space-x-4">
+      <a
+        routerLink="/admin/"
+        class="inline-flex items-center px-4 py-2 bg-kingfisher-daisy-600 text-white rounded-md shadow-md hover:bg-kingfisher-daisy-500 transition duration-200"
+      >
+        Dashboard
+      </a>
+      <a
+        routerLink="/admin/usuarios"
+        class="inline-flex items-center px-4 py-2 bg-kingfisher-daisy-600 text-white rounded-md shadow-md hover:bg-kingfisher-daisy-500 transition duration-200"
+      >
+        Gestionar Usuarios
+      </a>
+      <a
+        routerLink="/admin/configuracion"
+        class="inline-flex items-center px-4 py-2 bg-kingfisher-daisy-600 text-white rounded-md shadow-md hover:bg-kingfisher-daisy-500 transition duration-200"
+      >
+        Configuraciones
+      </a>
     </nav>
 
     <!-- Cargando Estado -->
@@ -75,13 +64,15 @@
             <td class="border px-4 py-2">{{ usuario.username }}</td>
             <td class="border px-4 py-2 flex space-x-2">
               <button
+                (click)="editarUsuario(usuario.id)"
                 class="bg-blue-500 text-white rounded px-4 py-1 transition duration-200 hover:bg-blue-400"
               >
-                Editar
+                Modificar
               </button>
               <button
                 (click)="eliminarUsuario(usuario.id)"
-                class="bg-red-500 text-white rounded px-4 py-1 transition duration-200 hover:bg-red-400"
+                class="bg-red-500 text-white rounded px-4 py-1 transition duration-200 hover:bg-red-400 disabled:opacity-75"
+                [disabled]="usuario.is_staff == true"
               >
                 Eliminar
               </button>

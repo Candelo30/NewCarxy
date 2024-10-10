@@ -1,4 +1,5 @@
 <app-loading-button [isLoading]="isLoading"></app-loading-button>
+<app-notifications></app-notifications>
 
 @if(!isLoading){
 <app-header></app-header>
@@ -35,7 +36,6 @@
   <!-- Contenido principal -->
   <div class="container mx-auto px-4 mt-16 md:mt-24">
     <div class="flex flex-col md:flex-row gap-6">
-      <!-- Sección de perfil del usuario -->
       <div
         class="w-full md:w-2/6 h-min bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 transition-colors duration-300"
       >
@@ -105,11 +105,23 @@
           >
             <!-- Usuario -->
             <div class="flex items-center mb-4">
+              <!--  -->
+              @if (publicacion.usuario_foto) {
               <img
                 [src]="publicacion.usuario_foto"
                 alt="Foto de perfil"
                 class="w-10 h-10 rounded-full mr-4"
               />
+
+              }@else {
+              <div
+                class="w-10 h-10 rounded-full mr-4 flex items-center justify-center"
+                [style.background-color]="selectedColor"
+              >
+                {{ getInitials(publicacion.usuario_username) }}
+              </div>
+              }
+              <!--  -->
               <div>
                 <p class="text-gray-800 dark:text-white font-bold">
                   {{ publicacion.usuario_username }}
@@ -140,55 +152,38 @@
 
             <!-- Reacciones -->
             <div class="flex items-center space-x-4">
-              <button class="text-blue-500 hover:text-blue-700">
+              <button
+                class="text-kingfisher-daisy-500 hover:text-kingfisher-daisy-700"
+                (click)="toggleLike(publicacion)"
+              >
                 ❤️ {{ publicacion.megusta }}
-                <!-- megusta -->
+                {{ publicacion.likedByUser ? "Quitar Me gusta" : "Me gusta" }}
               </button>
-              <button class="text-gray-500 hover:text-gray-700">
+              <button
+                (click)="seleccionarPublicacion(publicacion)"
+                class="text-kingfisher-daisy-500 hover:text-kingfisher-daisy-700"
+              >
                 💬 {{ publicacion.comentarios.length }} comentarios
                 <!-- Aquí se cuenta la cantidad de comentarios -->
               </button>
-            </div>
-
-            <!-- Lista de comentarios -->
-            <div class="mt-4 space-y-2">
-              <div
-                *ngFor="let comentario of publicacion.comentarios"
-                class="flex items-start space-x-2"
-              >
-                @if (comentario.usuario_foto) {
-                <img
-                  [src]="comentario.usuario_foto"
-                  alt="Foto de perfil"
-                  class="w-8 h-8 rounded-full"
-                />
-
-                }@else {
-                <div
-                  class="w-8 h-8 rounded-full flex items-center justify-center"
-                  [style.background-color]="selectedColor"
-                >
-                  {{ getInitials(comentario.usuario_username) }}
-                </div>
-                }
-                <div>
-                  <p class="text-sm text-gray-800 dark:text-white font-bold">
-                    {{ comentario.usuario_username }}
-                  </p>
-                  <!-- usuario_username del comentario -->
-                  <p class="text-sm text-gray-600 dark:text-gray-400">
-                    {{ comentario.comentario }}
-                    <!-- comentario -->
-                  </p>
-                </div>
-              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+    <!-- Sección de perfil del usuario -->
   </div>
 </div>
+
+@if (selectedPublicacion) {
+<app-details-publications
+  [publicacion]="selectedPublicacion"
+  [selectedColor]="selectedColor"
+  (closeDetail)="cerrarDetalle()"
+  (comentarioAgregado)="loadPublication()"
+></app-details-publications>
+
+}
 
 <!-- Modal Mejorado para Publicaciones -->
 <div

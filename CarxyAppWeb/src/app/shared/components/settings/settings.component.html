@@ -1,0 +1,134 @@
+<app-header></app-header>
+
+<div
+  class="container overflow-auto mx-auto flex flex-col h-screen bg-gray-100 dark:bg-gray-900 p-6"
+  style="height: calc(100vh - 96px)"
+>
+  <h1
+    class="text-4xl font-bold text-kingfisher-daisy-600 dark:text-white text-center mb-6"
+  >
+    Ajustes de Usuario
+  </h1>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Información del Perfil -->
+    <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
+      <h2
+        class="text-2xl font-semibold text-kingfisher-daisy-600 dark:text-white mb-4"
+      >
+        Información del Perfil
+      </h2>
+      <form [formGroup]="userForm" (ngSubmit)="updateUser()">
+        <div class="mb-4">
+          <label
+            for="username"
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >Nombre de Usuario:</label
+          >
+          <input
+            id="username"
+            formControlName="username"
+            class="border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-kingfisher-daisy-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition duration-200"
+            placeholder="Introduce tu nombre de usuario"
+          />
+        </div>
+
+        <div class="mb-4">
+          <label
+            for="email"
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >Email:</label
+          >
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            class="border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-kingfisher-daisy-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition duration-200"
+            placeholder="Introduce tu email"
+          />
+        </div>
+
+        <div class="mb-4">
+          <label
+            for="foto_perfil"
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >Foto de Perfil:</label
+          >
+          <input
+            id="foto_perfil"
+            type="file"
+            (change)="onFileChange($event)"
+            class="border border-gray-300 rounded-md p-2 w-full focus:outline-none dark:bg-gray-700 dark:border-gray-600 transition duration-200"
+          />
+        </div>
+
+        <button
+          type="submit"
+          class="mt-4 w-full bg-kingfisher-daisy-500 text-white p-2 rounded-md hover:bg-kingfisher-daisy-600 transition duration-200"
+        >
+          Actualizar Información
+        </button>
+      </form>
+    </div>
+
+    <!-- Seguridad -->
+    <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
+      <h2
+        class="text-2xl font-semibold text-kingfisher-daisy-600 dark:text-white mb-4"
+      >
+        Seguridad
+      </h2>
+      <form [formGroup]="securityForm" (ngSubmit)="updateSecurity()">
+        <div class="mb-4">
+          <label
+            for="password"
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >Cambiar Contraseña:</label
+          >
+          <input
+            id="password"
+            type="password"
+            formControlName="password"
+            class="border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-kingfisher-daisy-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition duration-200"
+            placeholder="Nueva contraseña"
+          />
+        </div>
+
+        <div class="mb-4">
+          <label
+            for="confirmPassword"
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >Confirmar Contraseña:</label
+          >
+          <input
+            id="confirmPassword"
+            type="password"
+            formControlName="confirmPassword"
+            class="border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-kingfisher-daisy-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition duration-200"
+            placeholder="Confirma tu nueva contraseña"
+          />
+        </div>
+
+        <button
+          type="submit"
+          class="mt-4 w-full bg-kingfisher-daisy-500 text-white p-2 rounded-md hover:bg-kingfisher-daisy-600 transition duration-200"
+        >
+          Actualizar Seguridad
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Eliminar Cuenta -->
+  <div class="mt-6 bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
+    <h2 class="text-2xl font-semibold text-red-500 dark:text-red-400 mb-4">
+      Eliminar Cuenta
+    </h2>
+    <button
+      (click)="deleteUser()"
+      class="w-full bg-red-500 text-white p-2 rounded-md hover:bg-red-600 transition duration-200"
+    >
+      Eliminar Cuenta
+    </button>
+  </div>
+</div>
