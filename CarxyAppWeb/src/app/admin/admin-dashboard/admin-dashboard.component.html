@@ -5,109 +5,123 @@
   style="height: calc(100vh - 136px)"
 >
   <div
-    class="admin-dashboard p-6 bg-gray-100 dark:bg-gray-900 min-h-screen transition-colors"
+    class="admin-dashboard p-6 sm:p-10 bg-gray-100 dark:bg-gray-900 min-h-screen rounded-lg shadow-lg transition-colors"
   >
+    <!-- Título Principal -->
     <h1
-      class="text-4xl font-bold mb-8 text-kingfisher-daisy-600 dark:text-white"
+      class="text-3xl sm:text-4xl font-extrabold mb-8 text-kingfisher-daisy-600 dark:text-white"
     >
       Panel de Administración
     </h1>
 
-    <div class="mb-6 space-x-2">
+    <!-- Navegación entre secciones -->
+    <div class="mb-6 flex flex-col sm:flex-row gap-4">
       <a
         routerLink="/admin/usuarios"
-        class="inline-flex items-center px-4 py-2 bg-kingfisher-daisy-600 text-white rounded-md shadow-md hover:bg-kingfisher-daisy-500 transition duration-200"
+        class="flex items-center justify-center px-4 py-3 bg-kingfisher-daisy-600 text-white rounded-md shadow-md hover:bg-kingfisher-daisy-500 transition duration-200"
       >
-        Gestionar Usuarios
+        <span class="material-icons mr-2">group</span> Gestionar Usuarios
       </a>
       <a
         routerLink="/admin/configuracion"
-        class="inline-flex items-center px-4 py-2 bg-kingfisher-daisy-600 text-white rounded-md shadow-md hover:bg-kingfisher-daisy-500 transition duration-200"
+        class="flex items-center justify-center px-4 py-3 bg-kingfisher-daisy-600 text-white rounded-md shadow-md hover:bg-kingfisher-daisy-500 transition duration-200"
       >
-        Configuraciones
+        <span class="material-icons mr-2">settings</span> Configuraciones
       </a>
     </div>
 
     <!-- Resumen de Estadísticas -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div
-        class="bg-kingfisher-daisy-500 text-white p-5 rounded-lg shadow-lg transition-transform transform hover:scale-105"
+        class="bg-kingfisher-daisy-500 text-white p-6 rounded-lg shadow-lg transition-transform transform hover:scale-105"
       >
-        <h3 class="text-lg font-bold">Total de Usuarios</h3>
+        <h3 class="text-lg font-semibold">Total de Usuarios</h3>
         <p class="text-3xl">{{ totalUsuarios }}</p>
       </div>
+
       <div
-        class="bg-kingfisher-daisy-400 text-white p-5 rounded-lg shadow-lg transition-transform transform hover:scale-105"
+        class="bg-kingfisher-daisy-400 text-white p-6 rounded-lg shadow-lg transition-transform transform hover:scale-105"
       >
-        <h3 class="text-lg font-bold">Total de Publicaciones</h3>
+        <h3 class="text-lg font-semibold">Total de Publicaciones</h3>
         <p class="text-3xl">{{ totalPublicaciones }}</p>
       </div>
+
       <div
-        class="bg-kingfisher-daisy-300 text-white p-5 rounded-lg shadow-lg transition-transform transform hover:scale-105"
+        class="bg-kingfisher-daisy-300 text-white p-6 rounded-lg shadow-lg transition-transform transform hover:scale-105"
       >
-        <h3 class="text-lg font-bold">Total de Modelos 3D</h3>
+        <h3 class="text-lg font-semibold">Total de Modelos 3D</h3>
         <p class="text-3xl">{{ totalModelos }}</p>
       </div>
     </div>
 
-    <!-- Cargando Estado -->
-    <div *ngIf="loading" class="text-center">
-      <p class="text-gray-600">Cargando datos...</p>
+    <!-- Estado de Carga -->
+    <div *ngIf="loading" class="text-center mt-6">
+      <p class="text-lg font-semibold text-gray-600 animate-pulse">
+        Cargando datos...
+      </p>
     </div>
 
     <!-- Mensaje de Error -->
-    <div *ngIf="errorMessage" class="text-red-600">
-      {{ errorMessage }}
+    <div *ngIf="errorMessage" class="text-red-600 text-center mt-4">
+      <span class="font-semibold">{{ errorMessage }}</span>
     </div>
 
     <!-- Últimas Publicaciones -->
     <div
-      class="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-md p-4"
+      class="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6"
       *ngIf="!loading && !errorMessage"
     >
       <h3
-        class="text-xl font-bold text-kingfisher-daisy-600 dark:text-white mb-2"
+        class="text-xl font-bold text-kingfisher-daisy-600 dark:text-white mb-4"
       >
         Últimas Publicaciones
       </h3>
-      <ul class="space-y-2">
+      <ul class="space-y-4">
         <li
           *ngFor="let publicacion of ultimasPublicaciones"
-          class="p-3 border-b border-gray-200 dark:border-gray-700"
+          class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg shadow-sm flex justify-between items-center"
         >
-          <strong class="text-gray-800 dark:text-gray-200">{{
-            publicacion.usuario_username || "Anónimo"
-          }}</strong
-          >: {{ publicacion.descripcion }}
-          <span class="text-gray-500 dark:text-gray-400">{{
-            publicacion.fecha_creacion | date : "short"
-          }}</span>
+          <div>
+            <strong class="text-gray-800 dark:text-gray-200">{{
+              publicacion.usuario_username || "Anónimo"
+            }}</strong>
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+              {{ publicacion.descripcion }}
+            </p>
+          </div>
+          <span class="text-sm text-gray-500 dark:text-gray-400">
+            {{ publicacion.fecha_creacion | date : "short" }}
+          </span>
         </li>
       </ul>
     </div>
 
     <!-- Comentarios Recientes -->
     <div
-      class="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-md p-4"
+      class="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6"
       *ngIf="!loading && !errorMessage"
     >
       <h3
-        class="text-xl font-bold text-kingfisher-daisy-600 dark:text-white mb-2"
+        class="text-xl font-bold text-kingfisher-daisy-600 dark:text-white mb-4"
       >
         Comentarios Recientes
       </h3>
-      <ul class="space-y-2">
+      <ul class="space-y-4">
         <li
           *ngFor="let comentario of comentariosRecientes"
-          class="p-3 border-b border-gray-200 dark:border-gray-700"
+          class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg shadow-sm flex justify-between items-center"
         >
-          <strong class="text-gray-800 dark:text-gray-200">{{
-            comentario.usuario_username || "Anónimo"
-          }}</strong
-          >: {{ comentario.comentario }}
-          <span class="text-gray-500 dark:text-gray-400">{{
-            comentario.fecha_comentario | date : "short"
-          }}</span>
+          <div>
+            <strong class="text-gray-800 dark:text-gray-200">{{
+              comentario.usuario_username || "Anónimo"
+            }}</strong>
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+              {{ comentario.comentario }}
+            </p>
+          </div>
+          <span class="text-sm text-gray-500 dark:text-gray-400">
+            {{ comentario.fecha_comentario | date : "short" }}
+          </span>
         </li>
       </ul>
     </div>

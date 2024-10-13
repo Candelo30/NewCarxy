@@ -1,80 +1,135 @@
 <app-header></app-header>
-
 <app-notifications></app-notifications>
+
 <main
-  class="px-4 mt-4 w-full h-screen overflow-auto"
+  class="px-4 sm:px-6 lg:px-8 mt-6 w-full h-screen overflow-auto"
   style="height: calc(100vh - 136px)"
 >
   <div
-    class="admin-dashboard p-6 bg-gray-100 dark:bg-gray-900 min-h-screen transition-colors"
+    class="admin-dashboard p-6 sm:p-8 bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors rounded-lg shadow-md"
   >
     <h1
-      class="text-4xl font-bold mb-8 text-kingfisher-daisy-600 dark:text-white"
+      class="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-8 sm:mb-10 text-kingfisher-daisy-600 dark:text-white"
     >
       Gestión de Usuarios
     </h1>
 
-    <nav class="mb-8 flex space-x-4">
+    <!-- Navegación -->
+    <nav class="mb-8 sm:mb-10 flex flex-col sm:flex-row gap-4">
       <a
         routerLink="/admin/"
-        class="inline-flex items-center px-4 py-2 bg-kingfisher-daisy-600 text-white rounded-md shadow-md hover:bg-kingfisher-daisy-500 transition duration-200"
+        class="flex items-center justify-center sm:justify-start px-4 py-2 sm:px-5 sm:py-3 bg-kingfisher-daisy-600 text-white text-sm sm:text-lg font-semibold rounded-lg shadow hover:bg-kingfisher-daisy-500 transition duration-300"
       >
-        Dashboard
+        <span class="material-icons mr-2">dashboard</span> Dashboard
       </a>
       <a
         routerLink="/admin/usuarios"
-        class="inline-flex items-center px-4 py-2 bg-kingfisher-daisy-600 text-white rounded-md shadow-md hover:bg-kingfisher-daisy-500 transition duration-200"
+        class="flex items-center justify-center sm:justify-start px-4 py-2 sm:px-5 sm:py-3 bg-kingfisher-daisy-600 text-white text-sm sm:text-lg font-semibold rounded-lg shadow hover:bg-kingfisher-daisy-500 transition duration-300"
       >
-        Gestionar Usuarios
+        <span class="material-icons mr-2">group</span> Gestionar Usuarios
       </a>
       <a
         routerLink="/admin/configuracion"
-        class="inline-flex items-center px-4 py-2 bg-kingfisher-daisy-600 text-white rounded-md shadow-md hover:bg-kingfisher-daisy-500 transition duration-200"
+        class="flex items-center justify-center sm:justify-start px-4 py-2 sm:px-5 sm:py-3 bg-kingfisher-daisy-600 text-white text-sm sm:text-lg font-semibold rounded-lg shadow hover:bg-kingfisher-daisy-500 transition duration-300"
       >
-        Configuraciones
+        <span class="material-icons mr-2">settings</span> Configuraciones
       </a>
     </nav>
 
-    <!-- Cargando Estado -->
-    <div *ngIf="loading" class="text-center">
-      <p class="text-gray-600">Cargando usuarios...</p>
+    <!-- Estado de Carga -->
+    <div *ngIf="loading" class="flex items-center justify-center py-8">
+      <span class="material-icons animate-spin text-4xl text-gray-500"
+        >sync</span
+      >
+      <p class="ml-3 text-lg text-gray-600 dark:text-gray-300">
+        Cargando usuarios...
+      </p>
     </div>
 
     <!-- Mensaje de Error -->
-    <div *ngIf="errorMessage" class="text-red-600 mb-4">
-      <p class="font-semibold">{{ errorMessage }}</p>
+    <div
+      *ngIf="errorMessage"
+      class="mb-6 p-4 bg-red-100 text-red-700 rounded-lg"
+    >
+      <span class="font-semibold">{{ errorMessage }}</span>
+    </div>
+
+    <!-- Input para Filtrar Usuarios -->
+    <div class="mb-4 flex justify-center">
+      <div class="relative w-full sm:w-1/3">
+        <input
+          type="text"
+          [(ngModel)]="filtroUsuario"
+          (input)="filtrarUsuarios()"
+          placeholder="Buscar por nombre de usuario..."
+          class="border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg px-10 py-2 w-full focus:outline-none focus:ring-2 focus:ring-kingfisher-daisy-500 transition duration-200 ease-in-out shadow-sm dark:shadow-md"
+        />
+        <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+          <span class="material-icons text-gray-400 dark:text-gray-400"
+            >search</span
+          >
+        </span>
+      </div>
     </div>
 
     <!-- Tabla de Usuarios -->
+    <div class="mb-4 flex justify-end">
+      <button
+        (click)="exportarAExcel()"
+        class="bg-green-600 text-white rounded-lg px-4 py-2 transition hover:bg-green-500 flex items-center"
+      >
+        <span class="material-icons"> upload_file </span>
+        Exportar a Excel
+      </button>
+    </div>
+
     <div class="overflow-x-auto">
-      <table class="min-w-full bg-white dark:bg-gray-800 rounded-lg shadow-md">
+      <table class="w-full bg-white dark:bg-gray-800 rounded-lg shadow-lg">
         <thead>
-          <tr class="bg-kingfisher-daisy-500 text-white text-left">
-            <th class="px-4 py-2">ID</th>
-            <th class="px-4 py-2">Nombre de Usuario</th>
-            <th class="px-4 py-2">Acciones</th>
+          <tr
+            class="bg-kingfisher-daisy-600 text-white text-left text-sm sm:text-lg"
+          >
+            <th class="px-6 py-4 font-semibold">ID</th>
+            <th class="px-6 py-4 font-semibold">Nombre de Usuario</th>
+            <th class="px-6 py-4 font-semibold">Correo Electrónico</th>
+            <th class="px-6 py-4 font-semibold">Rol</th>
+            <th class="px-6 py-4 font-semibold">Fecha de Creación</th>
+            <th class="px-6 py-4 text-center font-semibold">Acciones</th>
           </tr>
         </thead>
         <tbody>
           <tr
-            *ngFor="let usuario of usuarios"
-            class="border-b hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            *ngFor="let usuario of usuariosFiltrados"
+            class="border-b border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
-            <td class="border px-4 py-2">{{ usuario.id }}</td>
-            <td class="border px-4 py-2">{{ usuario.username }}</td>
-            <td class="border px-4 py-2 flex space-x-2">
+            <td class="border px-6 py-4 text-sm sm:text-lg">
+              {{ usuario.id }}
+            </td>
+            <td class="border px-6 py-4 text-sm sm:text-lg">
+              {{ usuario.username }}
+            </td>
+            <td class="border px-6 py-4 text-sm sm:text-lg">
+              {{ usuario.email }}
+            </td>
+            <td class="border px-6 py-4 text-sm sm:text-lg">
+              {{ usuario.is_staff ? "Admin" : "Usuario" }}
+            </td>
+            <td class="border px-6 py-4 text-sm sm:text-lg">
+              {{ usuario.date_joined | date : "shortDate" }}
+            </td>
+            <td class="border px-6 py-4 text-center flex justify-center gap-2">
               <button
                 (click)="editarUsuario(usuario.id)"
-                class="bg-blue-500 text-white rounded px-4 py-1 transition duration-200 hover:bg-blue-400"
+                class="bg-blue-600 text-white rounded-lg px-4 py-2 transition duration-200 hover:bg-blue-500 flex items-center"
               >
-                Modificar
+                <span class="material-icons mr-2">edit</span> Modificar
               </button>
               <button
                 (click)="eliminarUsuario(usuario.id)"
-                class="bg-red-500 text-white rounded px-4 py-1 transition duration-200 hover:bg-red-400 disabled:opacity-75"
+                class="bg-red-600 text-white rounded-lg px-4 py-2 transition duration-200 hover:bg-red-500 disabled:opacity-75 flex items-center"
                 [disabled]="usuario.is_staff == true"
               >
-                Eliminar
+                <span class="material-icons mr-2">delete</span> Eliminar
               </button>
             </td>
           </tr>
@@ -83,13 +138,224 @@
     </div>
 
     <!-- Botón Flotante para Agregar Usuario -->
-    <div class="fixed bottom-4 right-4">
+    <div class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6">
       <button
-        (click)="agregarUsuario()"
-        class="bg-green-600 text-white px-6 py-3 rounded-full shadow-lg transition duration-200 hover:bg-green-500 focus:outline-none"
+        (click)="abrirModal()"
+        class="bg-green-600 text-white p-4 sm:p-5 rounded-full shadow-lg transition hover:bg-green-500 focus:outline-none flex items-center"
       >
-        Agregar Usuario
+        <span class="material-icons mr-2">add</span> Agregar Usuario
       </button>
+    </div>
+
+    <!-- Modal Agregar -->
+    <div
+      *ngIf="modalVisible"
+      class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+    >
+      <div
+        class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-md w-full"
+      >
+        <h2 class="text-xl font-bold mb-4">Agregar Nuevo Usuario</h2>
+        <form (ngSubmit)="guardarUsuario()">
+          <div class="mb-4">
+            <label class="block text-gray-800 dark:text-kingfisher-daisy-200">
+              Nombre de Usuario
+            </label>
+            <input
+              type="text"
+              placeholder="Ej: Saerz"
+              [(ngModel)]="nuevoUsuario.username"
+              name="username"
+              required
+              class="w-full p-2 mt-2 bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-white rounded-md border border-gray-300 dark:border-gray-700"
+            />
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-gray-800 dark:text-kingfisher-daisy-200">
+              Nombres
+            </label>
+            <input
+              type="text"
+              placeholder="Alberto"
+              [(ngModel)]="nuevoUsuario.first_name"
+              name="first_name"
+              required
+              class="w-full p-2 mt-2 bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-white rounded-md border border-gray-300 dark:border-gray-700"
+            />
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-gray-800 dark:text-kingfisher-daisy-200">
+              Apellidos
+            </label>
+            <input
+              type="text"
+              placeholder="Carranza"
+              [(ngModel)]="nuevoUsuario.last_name"
+              name="last_name"
+              required
+              class="w-full p-2 mt-2 bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-white rounded-md border border-gray-300 dark:border-gray-700"
+            />
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-gray-800 dark:text-kingfisher-daisy-200">
+              Correo Electrónico
+            </label>
+            <input
+              type="email"
+              placeholder="ejemplo@correo.com"
+              [(ngModel)]="nuevoUsuario.email"
+              name="email"
+              required
+              class="w-full p-2 mt-2 bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-white rounded-md border border-gray-300 dark:border-gray-700"
+            />
+          </div>
+
+          <div class="mb-6">
+            <label class="block text-gray-800 dark:text-kingfisher-daisy-200">
+              Contraseña
+            </label>
+            <input
+              type="password"
+              placeholder="********"
+              [(ngModel)]="nuevoUsuario.password"
+              name="password"
+              required
+              class="w-full p-2 mt-2 bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-white rounded-md border border-gray-300 dark:border-gray-700"
+            />
+          </div>
+
+          <div class="flex justify-between mt-4">
+            <button
+              type="button"
+              (click)="cerrarModal()"
+              class="bg-gray-300 text-gray-700 rounded-lg px-4 py-2 transition hover:bg-gray-200"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="bg-blue-600 text-white rounded-lg px-4 py-2 transition hover:bg-blue-500"
+            >
+              Guardar Usuario
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal para Editar Usuario -->
+    <div
+      *ngIf="modalEditVisible"
+      class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+    >
+      <div
+        class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-md w-full"
+      >
+        <h2 class="text-xl font-bold mb-4">Editar Usuario</h2>
+        <form (ngSubmit)="guardarCambios()">
+          <div class="mb-4">
+            <label class="block text-gray-800 dark:text-kingfisher-daisy-200">
+              Nombre de Usuario
+            </label>
+            <input
+              type="text"
+              placeholder="Ej: Saerz"
+              [(ngModel)]="usuarioEdicion.username"
+              name="username"
+              required
+              class="w-full p-2 mt-2 bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-white rounded-md border border-gray-300 dark:border-gray-700"
+            />
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-gray-800 dark:text-kingfisher-daisy-200">
+              Nombres
+            </label>
+            <input
+              type="text"
+              placeholder="Alberto"
+              [(ngModel)]="usuarioEdicion.first_name"
+              name="first_name"
+              required
+              class="w-full p-2 mt-2 bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-white rounded-md border border-gray-300 dark:border-gray-700"
+            />
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-gray-800 dark:text-kingfisher-daisy-200">
+              Apellidos
+            </label>
+            <input
+              type="text"
+              placeholder="Carranza"
+              [(ngModel)]="usuarioEdicion.last_name"
+              name="last_name"
+              required
+              class="w-full p-2 mt-2 bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-white rounded-md border border-gray-300 dark:border-gray-700"
+            />
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-gray-800 dark:text-kingfisher-daisy-200">
+              Correo Electrónico
+            </label>
+            <input
+              type="email"
+              placeholder="ejemplo@correo.com"
+              [(ngModel)]="usuarioEdicion.email"
+              name="email"
+              required
+              class="w-full p-2 mt-2 bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-white rounded-md border border-gray-300 dark:border-gray-700"
+            />
+          </div>
+
+          <div class="mb-4">
+            <label class="flex items-center">
+              <input
+                type="checkbox"
+                [(ngModel)]="usuarioEdicion.is_staff"
+                name="is_staff"
+                class="mr-2"
+              />
+              <span class="text-gray-800 dark:text-kingfisher-daisy-200"
+                >Es miembro del personal</span
+              >
+            </label>
+          </div>
+
+          <div class="mb-6">
+            <label class="block text-gray-800 dark:text-kingfisher-daisy-200">
+              Contraseña
+            </label>
+            <input
+              type="password"
+              placeholder="******** (dejar vacío para no cambiar)"
+              [(ngModel)]="usuarioEdicion.password"
+              name="password"
+              class="w-full p-2 mt-2 bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-white rounded-md border border-gray-300 dark:border-gray-700"
+            />
+          </div>
+
+          <div class="flex justify-between mt-4">
+            <button
+              type="button"
+              (click)="cerrarModalEdit()"
+              class="bg-gray-300 text-gray-700 rounded-lg px-4 py-2 transition hover:bg-gray-200"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="bg-blue-600 text-white rounded-lg px-4 py-2 transition hover:bg-blue-500"
+            >
+              Guardar Cambios
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 </main>

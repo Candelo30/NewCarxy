@@ -6,47 +6,47 @@
   style="height: calc(100vh - 136px)"
 >
   <div
-    class="admin-dashboard p-8 bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors"
+    class="admin-dashboard p-8 sm:p-10 bg-gray-50 dark:bg-gray-900 min-h-screen rounded-lg shadow-lg transition-colors"
   >
     <!-- Título principal -->
     <h1
-      class="text-4xl font-bold mb-8 text-kingfisher-daisy-600 dark:text-white"
+      class="text-3xl sm:text-4xl font-extrabold mb-8 text-kingfisher-daisy-600 dark:text-white"
     >
       Configuración
     </h1>
 
     <!-- Navegación entre secciones -->
-    <nav class="mb-8 flex space-x-4">
+    <nav class="mb-8 flex flex-col sm:flex-row gap-4">
       <a
         routerLink="/admin/"
-        class="inline-flex items-center px-4 py-2 bg-kingfisher-daisy-600 text-white rounded-md shadow-md hover:bg-kingfisher-daisy-500 transition duration-200"
+        class="flex items-center justify-center sm:justify-start px-4 py-3 bg-kingfisher-daisy-600 text-white rounded-md shadow-md hover:bg-kingfisher-daisy-500 transition duration-200"
       >
-        Dashboard
+        <span class="material-icons mr-2">dashboard</span> Dashboard
       </a>
       <a
         routerLink="/admin/usuarios"
-        class="inline-flex items-center px-4 py-2 bg-kingfisher-daisy-600 text-white rounded-md shadow-md hover:bg-kingfisher-daisy-500 transition duration-200"
+        class="flex items-center justify-center sm:justify-start px-4 py-3 bg-kingfisher-daisy-600 text-white rounded-md shadow-md hover:bg-kingfisher-daisy-500 transition duration-200"
       >
-        Gestionar Usuarios
+        <span class="material-icons mr-2">group</span> Gestionar Usuarios
       </a>
       <a
         routerLink="/admin/configuracion"
-        class="inline-flex items-center px-4 py-2 bg-kingfisher-daisy-600 text-white rounded-md shadow-md hover:bg-kingfisher-daisy-500 transition duration-200"
+        class="flex items-center justify-center sm:justify-start px-4 py-3 bg-kingfisher-daisy-600 text-white rounded-md shadow-md hover:bg-kingfisher-daisy-500 transition duration-200"
       >
-        Configuraciones
+        <span class="material-icons mr-2">settings</span> Configuraciones
       </a>
     </nav>
 
-    <!-- Formulario para subir modelos 3D -->
-    <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg space-y-6">
+    <!-- Contenedor del formulario -->
+    <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg space-y-8">
       <h2
-        class="text-3xl font-semibold mb-6 text-kingfisher-daisy-600 dark:text-white"
+        class="text-2xl font-semibold text-kingfisher-daisy-600 dark:text-white"
       >
         Subir Modelo 3D
       </h2>
 
-      <!-- Nombre del modelo -->
       <form [formGroup]="modeloForm" (ngSubmit)="onSubmit()" class="space-y-6">
+        <!-- Campo: Nombre del Modelo -->
         <div class="space-y-2">
           <label
             for="nombre_modelo"
@@ -58,7 +58,7 @@
             id="nombre_modelo"
             formControlName="nombre_modelo"
             type="text"
-            class="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-kingfisher-daisy-500 dark:bg-gray-800 dark:text-gray-200"
+            class="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-kingfisher-daisy-500 dark:bg-gray-800 dark:text-gray-200"
             placeholder="Escribe el nombre del modelo"
             aria-required="true"
           />
@@ -73,7 +73,7 @@
           </div>
         </div>
 
-        <!-- Selección de archivo del modelo -->
+        <!-- Campo: Subir Archivo -->
         <div class="space-y-2">
           <label
             for="archivo_modelo"
@@ -85,7 +85,7 @@
             id="archivo_modelo"
             type="file"
             (change)="onFileSelected($event)"
-            class="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-kingfisher-daisy-500 dark:bg-gray-800 dark:text-gray-200"
+            class="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-kingfisher-daisy-500 dark:bg-gray-800 dark:text-gray-200"
             aria-required="true"
           />
           <div
@@ -99,10 +99,10 @@
           </div>
         </div>
 
-        <!-- Botón de subida -->
+        <!-- Botón de Enviar -->
         <button
           type="submit"
-          class="bg-kingfisher-daisy-600 text-white font-semibold py-3 px-6 rounded-md hover:bg-kingfisher-daisy-500 focus:outline-none focus:ring-2 focus:ring-kingfisher-daisy-500 w-full transition duration-200"
+          class="w-full bg-kingfisher-daisy-600 text-white font-semibold py-3 rounded-lg hover:bg-kingfisher-daisy-500 focus:outline-none focus:ring-2 focus:ring-kingfisher-daisy-500 transition duration-200"
           [disabled]="modeloForm.invalid"
         >
           Subir Modelo
@@ -112,7 +112,7 @@
       <!-- Indicador de progreso -->
       <div *ngIf="loading" class="flex items-center justify-center mt-4">
         <svg
-          class="animate-spin h-5 w-5 text-kingfisher-daisy-600 mr-3"
+          class="animate-spin h-6 w-6 text-kingfisher-daisy-600 mr-3"
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"
@@ -131,40 +131,40 @@
             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
           ></path>
         </svg>
-        <span class="text-lg font-semibold text-kingfisher-daisy-600"
-          >Cargando...</span
-        >
+        <span class="text-lg font-semibold text-kingfisher-daisy-600">
+          Cargando...
+        </span>
       </div>
 
-      <!-- Vista previa del modelo -->
-      <h3
-        class="text-lg font-semibold mt-6 text-kingfisher-daisy-600 dark:text-white"
-      >
-        Vista Previa del Modelo
-      </h3>
-
-      <!-- Contenedor del renderizado -->
-      <div
-        class="container-element--car w-full h-96 bg-gray-200 dark:bg-gray-700 rounded-lg shadow-md flex justify-center items-center relative"
-        #rendererContainer
-      >
-        <!-- Mensaje para indicar que no hay vista previa -->
-        <span
-          *ngIf="!selectedFile && !loading"
-          class="text-gray-500 dark:text-gray-300 text-sm"
+      <!-- Vista Previa del Modelo -->
+      <div class="space-y-4">
+        <h3
+          class="text-lg font-semibold text-kingfisher-daisy-600 dark:text-white"
         >
-          Selecciona un archivo para ver la vista previa aquí
-        </span>
-
-        <!-- Loading bar -->
+          Vista Previa del Modelo
+        </h3>
         <div
-          *ngIf="loading"
-          class="absolute bottom-4 w-3/4 h-1 bg-gray-300 dark:bg-gray-600 rounded-md overflow-hidden"
+          class="w-full h-96 bg-gray-200 dark:bg-gray-700 rounded-lg shadow-md flex items-center justify-center relative"
+          #rendererContainer
         >
+          <!-- Mensaje cuando no hay vista previa -->
+          <span
+            *ngIf="!selectedFile && !loading"
+            class="text-gray-500 dark:text-gray-300"
+          >
+            Selecciona un archivo para ver la vista previa aquí
+          </span>
+
+          <!-- Barra de progreso -->
           <div
-            class="bg-kingfisher-daisy-500 h-full transition-all duration-300 ease-in-out"
-            [style.width.%]="progress"
-          ></div>
+            *ngIf="loading"
+            class="absolute bottom-4 w-3/4 h-1 bg-gray-300 dark:bg-gray-600 rounded-md overflow-hidden"
+          >
+            <div
+              class="bg-kingfisher-daisy-500 h-full transition-all duration-300 ease-in-out"
+              [style.width.%]="progress"
+            ></div>
+          </div>
         </div>
       </div>
     </div>
