@@ -30,6 +30,14 @@ export class UserService {
     return this.http.delete(`http://127.0.0.1:8000/api/usuarios/${id}/`);
   }
 
+  // Método para actualizar un usuario
+  updateUser(id: number, userData: any): Observable<any> {
+    return this.http.patch(
+      `http://127.0.0.1:8000/api/usuarios/${id}/`,
+      userData
+    );
+  }
+
   // Método para esperar que todos los datos sean cargados
   loadAllResources(): Observable<any> {
     // Si tienes otras peticiones, agrégalas a `forkJoin`
