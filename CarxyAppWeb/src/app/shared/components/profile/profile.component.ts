@@ -157,35 +157,40 @@ export class ProfileComponent implements OnInit {
 
   // userDataPublications
 
+  // Asegúrate de que este método exista en tu componente padre
   loadPublication(): void {
     this.isLoading = true;
 
-    // Llamada al servicio para cargar las publicaciones
     this.PublicationData.loadAllResources().subscribe({
       next: (response) => {
-        const data = response.userDataPublications; // Suponemos que las publicaciones están en esta propiedad
+        const data = response.userDataPublications; // Asegúrate de que esta propiedad contenga las publicaciones
         this.publicaciones = data; // Asignamos las publicaciones a la variable del componente
-
-        console.log(data);
 
         // Aquí establecemos `likedByUser` basado en la respuesta del servidor
         this.publicaciones.forEach((pub: any) => {
           pub.likedByUser = pub.liked_by_user; // Cambiamos esto para leer directamente desde cada publicación
         });
+
+        // Ordenar las publicaciones de más nuevas a más viejas
+        this.publicaciones.sort((a: any, b: any) => {
+          return (
+            new Date(b.fecha_creacion).getTime() -
+            new Date(a.fecha_creacion).getTime()
+          );
+        });
+
         this.isLoading = false; // Desactivamos el indicador de carga
 
-        // Si hay una publicación seleccionada, actualizamos la referencia con los nuevos datos
+        // Actualizar la publicación seleccionada si es necesario
         if (this.selectedPublicacion) {
           const updatedPublicacion = this.publicaciones.find(
             (pub: any) => pub.id === this.selectedPublicacion.id
           );
 
-          // Actualizamos la publicación seleccionada solo si la encontramos en los datos recargados
           if (updatedPublicacion) {
             this.selectedPublicacion = updatedPublicacion;
           } else {
-            // Si la publicación seleccionada ya no existe en la lista, deseleccionamos
-            this.selectedPublicacion = null;
+            this.selectedPublicacion = null; // Deseleccionar si no se encuentra
           }
         }
       },

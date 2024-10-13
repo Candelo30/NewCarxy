@@ -26,6 +26,7 @@ export class HomeComponent implements OnInit {
   selectedColor: string = '';
   selectedPublicacion: any = null; // Almacena la publicación seleccionada
   userName = '';
+  mensajeSaludo: string = '🎉 ¡Bienvenido!';
   constructor(
     private PublicationData: PublicationsService,
     private state: StatesService,
@@ -39,6 +40,7 @@ export class HomeComponent implements OnInit {
   ngOnInit(): void {
     this.loadPublication();
     this.loadUserData();
+    this.cambiarMensaje();
   }
 
   // Maneja la selección de una publicación para mostrar el detalle
@@ -57,36 +59,34 @@ export class HomeComponent implements OnInit {
   loadPublication(): void {
     this.isLoading = true;
 
-    // Llamada al servicio para cargar las publicaciones
     this.PublicationData.loadAllResources().subscribe({
       next: (response) => {
-        const data = response.userDataAllPublications; // Suponemos que las publicaciones están en esta propiedad
-        this.publicaciones = data; // Asignamos las publicaciones a la variable del componente
+        this.publicaciones = response.userDataAllPublications;
 
-        // Aquí establecemos `likedByUser` basado en la respuesta del servidor
         this.publicaciones.forEach((pub: any) => {
-          pub.likedByUser = pub.liked_by_user; // Cambiamos esto para leer directamente desde cada publicación
+          pub.likedByUser = pub.liked_by_user;
         });
-        this.isLoading = false; // Desactivamos el indicador de carga
 
-        // Si hay una publicación seleccionada, actualizamos la referencia con los nuevos datos
+        this.isLoading = false;
+        // Ordenar las publicaciones de más nuevas a más viejas
+        this.publicaciones.sort((a: any, b: any) => {
+          return (
+            new Date(b.fecha_creacion).getTime() -
+            new Date(a.fecha_creacion).getTime()
+          );
+        });
+
+        // Aquí aseguramos que se recargue la publicación seleccionada
         if (this.selectedPublicacion) {
           const updatedPublicacion = this.publicaciones.find(
             (pub: any) => pub.id === this.selectedPublicacion.id
           );
-
-          // Actualizamos la publicación seleccionada solo si la encontramos en los datos recargados
-          if (updatedPublicacion) {
-            this.selectedPublicacion = updatedPublicacion;
-          } else {
-            // Si la publicación seleccionada ya no existe en la lista, deseleccionamos
-            this.selectedPublicacion = null;
-          }
+          this.selectedPublicacion = updatedPublicacion ?? null;
         }
       },
       error: (err) => {
         console.error('Error al cargar las publicaciones:', err);
-        this.isLoading = false; // Desactivamos el indicador de carga incluso si hay un error
+        this.isLoading = false;
       },
     });
   }
@@ -138,14 +138,27 @@ export class HomeComponent implements OnInit {
     return initials.toUpperCase();
   }
 
+  cambiarMensaje() {
+    const mensajes = [
+      '🎉 ¡Bienvenido!',
+      '✨ Explora las publicaciones recientes',
+      '🚀 Comparte tus experiencias',
+    ];
+    let index = 0;
+    setInterval(() => {
+      this.mensajeSaludo = mensajes[index];
+      index = (index + 1) % mensajes.length;
+    }, 3000); // Cambia cada 3 segundos
+  }
+
   getSaludo(): string {
     const hour = new Date().getHours();
     if (hour < 12) {
-      return `Buenos días ☀️ @${this.userName}`;
+      return `Buenos días ☀️`;
     } else if (hour < 18) {
-      return `Buenas tardes 🌗 @${this.userName}`;
+      return `Buenas tardes 🌗`;
     } else {
-      return `Buenas noches 🌕 @${this.userName}`;
+      return `Buenas noches 🌕`;
     }
   }
 }

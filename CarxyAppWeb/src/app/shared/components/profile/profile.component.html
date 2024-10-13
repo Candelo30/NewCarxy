@@ -151,20 +151,25 @@
             </div>
 
             <!-- Reacciones -->
+
             <div class="flex items-center space-x-4">
               <button
-                class="text-kingfisher-daisy-500 hover:text-kingfisher-daisy-700"
+                class="transition-transform duration-300 transform hover:scale-110 text-gray-800 dark:text-gray-300 hover:text-red-500 dark:hover:text-red-400 flex items-center space-x-2"
                 (click)="toggleLike(publicacion)"
               >
-                ❤️ {{ publicacion.megusta }}
-                {{ publicacion.likedByUser ? "Quitar Me gusta" : "Me gusta" }}
+                <span class="text-lg">❤️</span>
+                <span>{{ publicacion.megusta }}</span>
+                <span>{{
+                  publicacion.likedByUser ? "Quitar Me gusta" : "Me gusta"
+                }}</span>
               </button>
+
               <button
                 (click)="seleccionarPublicacion(publicacion)"
-                class="text-kingfisher-daisy-500 hover:text-kingfisher-daisy-700"
+                class="transition-transform duration-300 transform hover:scale-110 text-gray-800 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400 flex items-center space-x-2"
               >
-                💬 {{ publicacion.comentarios.length }} comentarios
-                <!-- Aquí se cuenta la cantidad de comentarios -->
+                <span class="text-lg">💬</span>
+                <span>{{ publicacion.comentarios.length }} comentarios</span>
               </button>
             </div>
           </div>
