@@ -1,11 +1,11 @@
 <app-header></app-header>
 
 <main
-  class="px-4 mt-4 w-full h-screen overflow-auto"
+  class="px-4 sm:px-6 lg:px-8 mt-6 w-full h-screen overflow-auto"
   style="height: calc(100vh - 136px)"
 >
   <div
-    class="admin-dashboard p-6 sm:p-10 bg-gray-100 dark:bg-gray-900 min-h-screen rounded-lg shadow-lg transition-colors"
+    class="admin-dashboard p-6 sm:p-8 bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors rounded-lg shadow-md"
   >
     <!-- Título Principal -->
     <h1
@@ -15,20 +15,32 @@
     </h1>
 
     <!-- Navegación entre secciones -->
-    <div class="mb-6 flex flex-col sm:flex-row gap-4">
+    <nav class="mb-8 overflow-x-auto whitespace-nowrap flex w-full px-4">
+      <a
+        routerLink="/admin/"
+        class="flex items-center px-4 py-2 sm:px-5 sm:py-3 bg-kingfisher-daisy-600 text-white text-sm sm:text-lg font-semibold rounded-lg shadow hover:bg-kingfisher-daisy-500 transition duration-300 mr-4 last:mr-0"
+      >
+        <span class="material-icons mr-2">dashboard</span> Dashboard
+      </a>
       <a
         routerLink="/admin/usuarios"
-        class="flex items-center justify-center px-4 py-3 bg-kingfisher-daisy-600 text-white rounded-md shadow-md hover:bg-kingfisher-daisy-500 transition duration-200"
+        class="flex items-center px-4 py-2 sm:px-5 sm:py-3 bg-kingfisher-daisy-600 text-white text-sm sm:text-lg font-semibold rounded-lg shadow hover:bg-kingfisher-daisy-500 transition duration-300 mr-4 last:mr-0"
       >
         <span class="material-icons mr-2">group</span> Gestionar Usuarios
       </a>
       <a
         routerLink="/admin/configuracion"
-        class="flex items-center justify-center px-4 py-3 bg-kingfisher-daisy-600 text-white rounded-md shadow-md hover:bg-kingfisher-daisy-500 transition duration-200"
+        class="flex items-center px-4 py-2 sm:px-5 sm:py-3 bg-kingfisher-daisy-600 text-white text-sm sm:text-lg font-semibold rounded-lg shadow hover:bg-kingfisher-daisy-500 transition duration-300 mr-4 last:mr-0"
       >
         <span class="material-icons mr-2">settings</span> Configuraciones
       </a>
-    </div>
+      <a
+        routerLink="/admin/help"
+        class="flex items-center px-4 py-2 sm:px-5 sm:py-3 bg-kingfisher-daisy-600 text-white text-sm sm:text-lg font-semibold rounded-lg shadow hover:bg-kingfisher-daisy-500 transition duration-300"
+      >
+        <span class="material-icons mr-2">help</span> Ayuda
+      </a>
+    </nav>
 
     <!-- Resumen de Estadísticas -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">

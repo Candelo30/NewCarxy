@@ -1,0 +1,251 @@
+<app-header></app-header>
+<app-notifications></app-notifications>
+
+<main
+  class="px-6 mt-6 w-full h-screen overflow-auto"
+  style="height: calc(100vh - 136px)"
+>
+  <div
+    class="admin-dashboard p-8 sm:p-10 bg-gray-50 dark:bg-gray-900 min-h-screen rounded-lg shadow-lg transition-colors"
+  >
+    <!-- Título principal -->
+    <h1
+      class="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-8 sm:mb-10 text-kingfisher-daisy-600 dark:text-white"
+    >
+      Configuración de Ayudas
+    </h1>
+
+    <!-- Navegación entre secciones -->
+    <nav class="mb-8 overflow-x-auto whitespace-nowrap flex w-full px-4">
+      <a
+        routerLink="/admin/"
+        class="flex items-center px-4 py-2 sm:px-5 sm:py-3 bg-kingfisher-daisy-600 text-white text-sm sm:text-lg font-semibold rounded-lg shadow hover:bg-kingfisher-daisy-500 transition duration-300 mr-4 last:mr-0"
+      >
+        <span class="material-icons mr-2">dashboard</span> Dashboard
+      </a>
+      <a
+        routerLink="/admin/usuarios"
+        class="flex items-center px-4 py-2 sm:px-5 sm:py-3 bg-kingfisher-daisy-600 text-white text-sm sm:text-lg font-semibold rounded-lg shadow hover:bg-kingfisher-daisy-500 transition duration-300 mr-4 last:mr-0"
+      >
+        <span class="material-icons mr-2">group</span> Gestionar Usuarios
+      </a>
+      <a
+        routerLink="/admin/configuracion"
+        class="flex items-center px-4 py-2 sm:px-5 sm:py-3 bg-kingfisher-daisy-600 text-white text-sm sm:text-lg font-semibold rounded-lg shadow hover:bg-kingfisher-daisy-500 transition duration-300 mr-4 last:mr-0"
+      >
+        <span class="material-icons mr-2">settings</span> Configuraciones
+      </a>
+      <a
+        routerLink="/admin/help"
+        class="flex items-center px-4 py-2 sm:px-5 sm:py-3 bg-kingfisher-daisy-600 text-white text-sm sm:text-lg font-semibold rounded-lg shadow hover:bg-kingfisher-daisy-500 transition duration-300"
+      >
+        <span class="material-icons mr-2">help</span> Ayuda
+      </a>
+    </nav>
+
+    <!-- Artículos de Ayuda -->
+    <h2 class="text-2xl font-bold mb-4">Artículos de Ayuda</h2>
+
+    <div *ngIf="isLoading" class="text-center mb-4">
+      <p>Cargando...</p>
+    </div>
+
+    <div *ngIf="!isLoading && articles.length === 0" class="text-center mb-4">
+      <p>No hay artículos de ayuda disponibles.</p>
+    </div>
+
+    <!-- Formulario para agregar nuevo artículo -->
+    <form
+      (ngSubmit)="addArticle()"
+      #articleForm="ngForm"
+      class="mb-8 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg"
+    >
+      <h3 class="text-xl font-semibold mb-4 text-gray-800 dark:text-white">
+        Agregar Nuevo Artículo
+      </h3>
+      <div class="mb-4">
+        <label class="block mb-1 text-gray-700 dark:text-gray-300"
+          >Título:</label
+        >
+        <input
+          type="text"
+          [(ngModel)]="newArticle.title"
+          name="title"
+          required
+          class="border rounded w-full p-2 bg-gray-100 dark:bg-gray-700 dark:border-gray-600 text-gray-800 dark:text-gray-200"
+        />
+      </div>
+      <div class="mb-4">
+        <label class="block mb-1 text-gray-700 dark:text-gray-300"
+          >Resumen:</label
+        >
+        <textarea
+          [(ngModel)]="newArticle.summary"
+          name="summary"
+          required
+          class="border rounded w-full p-2 bg-gray-100 dark:bg-gray-700 dark:border-gray-600 text-gray-800 dark:text-gray-200"
+        ></textarea>
+      </div>
+      <div class="mb-4">
+        <label class="block mb-1 text-gray-700 dark:text-gray-300"
+          >Contenido:</label
+        >
+        <textarea
+          [(ngModel)]="newArticle.content"
+          name="content"
+          required
+          class="border rounded w-full p-2 bg-gray-100 dark:bg-gray-700 dark:border-gray-600 text-gray-800 dark:text-gray-200"
+        ></textarea>
+      </div>
+      <div class="mb-4">
+        <label class="block mb-1 text-gray-700 dark:text-gray-300"
+          >Enlace:</label
+        >
+        <input
+          type="url"
+          [(ngModel)]="newArticle.link"
+          name="link"
+          class="border rounded w-full p-2 bg-gray-100 dark:bg-gray-700 dark:border-gray-600 text-gray-800 dark:text-gray-200"
+        />
+      </div>
+      <div class="mb-4">
+        <label class="block mb-1 text-gray-700 dark:text-gray-300"
+          >Imagen:</label
+        >
+        <input
+          type="file"
+          (change)="onImageSelected($event)"
+          class="border rounded w-full p-2 bg-gray-100 dark:bg-gray-700 dark:border-gray-600 text-gray-800 dark:text-gray-200"
+        />
+      </div>
+      <button
+        type="submit"
+        class="bg-kingfisher-daisy-600 text-white py-2 px-4 rounded hover:bg-kingfisher-daisy-700 dark:bg-kingfisher-daisy-500 dark:hover:bg-kingfisher-daisy-600"
+      >
+        Agregar Artículo
+      </button>
+    </form>
+
+    <ul
+      *ngIf="!isLoading && articles.length > 0"
+      class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+    >
+      <li
+        *ngFor="let article of articles"
+        class="p-4 border rounded-lg shadow-md transition-transform transform hover:scale-105 bg-white dark:bg-gray-800"
+      >
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-white">
+          {{ article.title }}
+        </h3>
+        <p class="mt-1 text-gray-600 dark:text-gray-400">
+          {{ article.summary }}
+        </p>
+        <img
+          *ngIf="article.image"
+          [src]="article.image"
+          alt="{{ article.title }}"
+          class="mt-2 w-full h-auto rounded-md shadow"
+        />
+        <div class="mt-3">
+          <a
+            *ngIf="article.link"
+            [href]="article.link"
+            class="text-blue-600 hover:underline dark:text-blue-400"
+            target="_blank"
+            >Leer más</a
+          >
+        </div>
+        <div class="mt-4 flex gap-1">
+          <button
+            (click)="editArticle(article)"
+            class="bg-yellow-500 hover:bg-yellow-400 text-white py-1 px-2 rounded transition-colors"
+          >
+            Editar
+          </button>
+          <button
+            (click)="deleteArticle(article.id)"
+            class="bg-red-600 hover:bg-red-500 text-white py-1 px-2 rounded transition-colors"
+          >
+            Eliminar
+          </button>
+        </div>
+      </li>
+    </ul>
+
+    <!-- Preguntas Frecuentes -->
+    <h2 class="text-2xl font-bold mt-8 mb-4">Preguntas Frecuentes</h2>
+    <div *ngIf="!isLoading && faqs.length === 0" class="text-center mb-4">
+      <p>No hay preguntas frecuentes disponibles.</p>
+    </div>
+
+    <!-- Formulario para agregar nueva pregunta -->
+    <form
+      (ngSubmit)="addFAQ()"
+      #faqForm="ngForm"
+      class="mb-8 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md"
+    >
+      <h3 class="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">
+        Agregar Nueva Pregunta Frecuente
+      </h3>
+      <div class="mb-4">
+        <label class="block mb-1 text-gray-700 dark:text-gray-300"
+          >Pregunta:</label
+        >
+        <input
+          type="text"
+          [(ngModel)]="newFAQ.question"
+          name="question"
+          required
+          class="border rounded w-full p-3 transition duration-200 focus:ring focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+          placeholder="Escribe la pregunta aquí..."
+        />
+      </div>
+      <div class="mb-4">
+        <label class="block mb-1 text-gray-700 dark:text-gray-300"
+          >Respuesta:</label
+        >
+        <textarea
+          [(ngModel)]="newFAQ.answer"
+          name="answer"
+          required
+          rows="4"
+          class="border rounded w-full p-3 transition duration-200 focus:ring focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+          placeholder="Escribe la respuesta aquí..."
+        ></textarea>
+      </div>
+      <button
+        type="submit"
+        class="bg-blue-600 hover:bg-blue-500 text-white py-2 px-4 rounded transition duration-200"
+      >
+        Agregar Pregunta
+      </button>
+    </form>
+
+    <ul *ngIf="!isLoading && faqs.length > 0" class="space-y-4">
+      <li
+        *ngFor="let faq of faqs"
+        class="p-6 border rounded-lg shadow-md bg-white dark:bg-gray-800 transition duration-200"
+      >
+        <h3 class="text-xl font-semibold text-gray-800 dark:text-white">
+          {{ faq.question }}
+        </h3>
+        <p class="mt-2 text-gray-600 dark:text-gray-300">{{ faq.answer }}</p>
+
+        <div class="mt-4 flex space-x-2">
+          <button
+            (click)="editFAQ(faq)"
+            class="bg-yellow-500 hover:bg-yellow-400 text-white py-2 px-4 rounded transition duration-200"
+          >
+            Editar
+          </button>
+          <button
+            (click)="deleteFAQ(faq.id)"
+            class="bg-red-600 hover:bg-red-500 text-white py-2 px-4 rounded transition duration-200"
+          >
+            Eliminar
+          </button>
+        </div>
+      </li>
+    </ul>
+  </div>
+</main>
