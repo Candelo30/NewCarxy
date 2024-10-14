@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Renderer2 } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -12,6 +12,7 @@ import { HeaderComponent } from '../header/header.component';
 import { NotificationService } from '../../../core/services/notification.service';
 import { Notification } from '../../../interface/notifications/notification.model';
 import { NotificationsComponent } from '../notifications/notifications.component';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-settings',
@@ -21,6 +22,7 @@ import { NotificationsComponent } from '../notifications/notifications.component
     FormsModule,
     ReactiveFormsModule,
     NotificationsComponent,
+    CommonModule,
   ],
   templateUrl: './settings.component.html',
   styleUrls: ['./settings.component.css'],
@@ -29,12 +31,16 @@ export class SettingsComponent implements OnInit {
   userForm: FormGroup;
   securityForm: FormGroup; // Formulario de seguridad
   user: any; // Define un modelo más específico si es necesario
+  isThemeMenuOpen: boolean = false;
+  currentTheme: 'light' | 'dark' | 'system' = 'system';
+  private systemThemeListener!: () => void; // Almacena la referencia del listener
 
   constructor(
     private fb: FormBuilder,
     private userService: UserService,
     private router: Router,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private renderer: Renderer2
   ) {
     this.userForm = this.fb.group({
       username: ['', Validators.required],
@@ -51,6 +57,10 @@ export class SettingsComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadUserData();
+    this.applyTheme();
+
+    // Escuchar cambios en las preferencias del sistema si está en modo 'system'
+    this.listenToSystemThemeChanges();
   }
 
   loadUserData(): void {
@@ -131,5 +141,51 @@ export class SettingsComponent implements OnInit {
         }
       );
     }
+  }
+
+  setTheme(theme: 'light' | 'dark' | 'system') {
+    this.currentTheme = theme;
+
+    if (theme === 'system') {
+      localStorage.removeItem('theme');
+    } else {
+      localStorage.setItem('theme', theme);
+    }
+
+    this.applyTheme();
+  }
+
+  applyTheme() {
+    const systemPrefersDark = window.matchMedia(
+      '(prefers-color-scheme: dark)'
+    ).matches;
+    const savedTheme = localStorage.getItem('theme');
+
+    const isDarkMode =
+      savedTheme === 'dark' || (savedTheme === null && systemPrefersDark);
+
+    if (isDarkMode) {
+      this.renderer.addClass(document.documentElement, 'dark');
+    } else {
+      this.renderer.removeClass(document.documentElement, 'dark');
+    }
+  }
+
+  listenToSystemThemeChanges() {
+    const mediaQueryList = window.matchMedia('(prefers-color-scheme: dark)');
+
+    // Crear listener para detectar cambios en las preferencias del sistema
+    const systemThemeChangeListener = (event: MediaQueryListEvent) => {
+      if (this.currentTheme === 'system') {
+        this.applyTheme(); // Actualiza el tema en tiempo real si está en modo 'system'
+      }
+    };
+
+    // Añadir el listener a la media query
+    mediaQueryList.addEventListener('change', systemThemeChangeListener);
+
+    // Guardar referencia para poder removerlo más adelante
+    this.systemThemeListener = () =>
+      mediaQueryList.removeEventListener('change', systemThemeChangeListener);
   }
 }
