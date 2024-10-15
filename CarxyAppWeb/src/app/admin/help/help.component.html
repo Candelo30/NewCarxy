@@ -99,17 +99,6 @@
       </div>
       <div class="mb-4">
         <label class="block mb-1 text-gray-700 dark:text-gray-300"
-          >Enlace:</label
-        >
-        <input
-          type="url"
-          [(ngModel)]="newArticle.link"
-          name="link"
-          class="border rounded w-full p-2 bg-gray-100 dark:bg-gray-700 dark:border-gray-600 text-gray-800 dark:text-gray-200"
-        />
-      </div>
-      <div class="mb-4">
-        <label class="block mb-1 text-gray-700 dark:text-gray-300"
           >Imagen:</label
         >
         <input
@@ -157,7 +146,7 @@
         </div>
         <div class="mt-4 flex gap-1">
           <button
-            (click)="editArticle(article)"
+            (click)="openEditingArticle(article)"
             class="bg-yellow-500 hover:bg-yellow-400 text-white py-1 px-2 rounded transition-colors"
           >
             Editar
@@ -233,7 +222,7 @@
 
         <div class="mt-4 flex space-x-2">
           <button
-            (click)="editFAQ(faq)"
+            (click)="openEditing(faq)"
             class="bg-yellow-500 hover:bg-yellow-400 text-white py-2 px-4 rounded transition duration-200"
           >
             Editar
@@ -249,3 +238,219 @@
     </ul>
   </div>
 </main>
+
+<!-- Articles -->
+<div
+  class="fixed z-10 inset-0 overflow-y-auto"
+  *ngIf="isOpenEditingArticle"
+  aria-labelledby="modal-title"
+  role="dialog"
+  aria-modal="true"
+>
+  <div
+    class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0"
+  >
+    <div
+      class="fixed inset-0 bg-gray-600 dark:bg-black bg-opacity-75 transition-opacity"
+      aria-hidden="true"
+    ></div>
+
+    <span
+      class="hidden sm:inline-block sm:align-middle sm:h-screen"
+      aria-hidden="true"
+    >
+      &#8203;
+    </span>
+
+    <div
+      class="inline-block align-bottom bg-white dark:bg-gray-900 rounded-lg px-8 pt-7 pb-8 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-10"
+    >
+      <h3
+        class="text-xl leading-6 font-medium text-gray-900 dark:text-gray-100 mb-6"
+        id="modal-title"
+      >
+        Editar Artículo
+      </h3>
+
+      <form (ngSubmit)="editArticle(valuesArticle)">
+        <div class="space-y-6">
+          <!-- Campo para el título -->
+          <div>
+            <label
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
+              Título
+            </label>
+            <input
+              type="text"
+              [(ngModel)]="valuesArticle.title"
+              name="title"
+              class="py-2 block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-800 dark:text-gray-100"
+              required
+            />
+          </div>
+
+          <!-- Campo para el resumen -->
+          <div>
+            <label
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
+              Resumen
+            </label>
+            <textarea
+              [(ngModel)]="valuesArticle.summary"
+              name="summary"
+              rows="2"
+              class="py-2 block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-800 dark:text-gray-100"
+              required
+            ></textarea>
+          </div>
+
+          <!-- Campo para el contenido -->
+          <div>
+            <label
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
+              Contenido
+            </label>
+            <textarea
+              [(ngModel)]="valuesArticle.content"
+              name="content"
+              rows="4"
+              class="py-2 block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-800 dark:text-gray-100"
+              required
+            ></textarea>
+          </div>
+
+          <!-- Campo para la imagen -->
+          <div>
+            <label
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
+              Imagen
+            </label>
+            <input
+              type="file"
+              (change)="onImageSelected($event)"
+              class="block w-full text-gray-500 dark:text-gray-300"
+            />
+            <div *ngIf="imagePreview" class="mt-2">
+              <img
+                [src]="imagePreview"
+                alt="Previsualización"
+                class="max-w-full h-auto rounded-md"
+              />
+            </div>
+          </div>
+
+          <!-- Botones de acción -->
+          <div class="mt-6 sm:flex sm:flex-row-reverse">
+            <button
+              (click)="editArticle(valuesArticle)"
+              type="submit"
+              class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-5 py-3 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm"
+            >
+              Guardar
+            </button>
+            <button
+              type="button"
+              class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-5 py-3 bg-gray-200 dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:mt-0 sm:w-auto sm:text-sm"
+              (click)="CloseEditingArticle()"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- FQA -->
+<div
+  class="fixed z-10 inset-0 overflow-y-auto"
+  *ngIf="isOpenEditingFQA"
+  aria-labelledby="modal-title"
+  role="dialog"
+  aria-modal="true"
+>
+  <div
+    class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0"
+  >
+    <div
+      class="fixed inset-0 bg-gray-600 dark:bg-black bg-opacity-75 transition-opacity"
+      aria-hidden="true"
+    ></div>
+
+    <span
+      class="hidden sm:inline-block sm:align-middle sm:h-screen"
+      aria-hidden="true"
+    >
+      &#8203;
+    </span>
+
+    <div
+      class="inline-block align-bottom bg-white dark:bg-gray-900 rounded-lg px-8 pt-7 pb-8 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-10"
+    >
+      <h3
+        class="text-xl leading-6 font-medium text-gray-900 dark:text-gray-100 mb-6"
+        id="modal-title"
+      >
+        Editar Pregunta
+      </h3>
+
+      <form (ngSubmit)="editFAQ(valuesFQA)">
+        <div class="space-y-6">
+          <!-- Campo para la pregunta -->
+          <div>
+            <label
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
+              Pregunta
+            </label>
+            <input
+              type="text"
+              [(ngModel)]="newFAQ.question"
+              name="question"
+              class="py-2 block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-800 dark:text-gray-100"
+              required
+            />
+          </div>
+
+          <!-- Campo para la respuesta -->
+          <div>
+            <label
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
+              Respuesta
+            </label>
+            <textarea
+              [(ngModel)]="newFAQ.answer"
+              name="answer"
+              rows="3"
+              class="py-2 block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-800 dark:text-gray-100"
+              required
+            ></textarea>
+          </div>
+
+          <!-- Botones de acción -->
+          <div class="mt-6 sm:flex sm:flex-row-reverse">
+            <button
+              type="submit"
+              class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-5 py-3 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm"
+            >
+              Guardar
+            </button>
+            <button
+              type="button"
+              class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-5 py-3 bg-gray-200 dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:mt-0 sm:w-auto sm:text-sm"
+              (click)="CloseEditing()"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
