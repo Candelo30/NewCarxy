@@ -13,6 +13,7 @@ import { NotificationService } from '../../../core/services/notification.service
 import { Notification } from '../../../interface/notifications/notification.model';
 import { NotificationsComponent } from '../notifications/notifications.component';
 import { CommonModule } from '@angular/common';
+import { StatesService } from '../../../core/services/states.service';
 
 @Component({
   selector: 'app-settings',
@@ -40,7 +41,8 @@ export class SettingsComponent implements OnInit {
     private userService: UserService,
     private router: Router,
     private notificationService: NotificationService,
-    private renderer: Renderer2
+    private renderer: Renderer2,
+    private statesService: StatesService
   ) {
     this.userForm = this.fb.group({
       username: ['', Validators.required],
@@ -48,19 +50,15 @@ export class SettingsComponent implements OnInit {
       foto_perfil: [null],
     });
 
-    // Inicializar el formulario de seguridad
     this.securityForm = this.fb.group({
-      password: ['', [Validators.required, Validators.minLength(6)]],
-      confirmPassword: ['', Validators.required],
+      oldPassword: ['', Validators.required], // Control para la contraseña antigua
+      password: ['', [Validators.required, Validators.minLength(6)]], // Control para la nueva contraseña
+      confirmPassword: ['', Validators.required], // Control para confirmar la nueva contraseña
     });
   }
 
   ngOnInit(): void {
     this.loadUserData();
-    this.applyTheme();
-
-    // Escuchar cambios en las preferencias del sistema si está en modo 'system'
-    this.listenToSystemThemeChanges();
   }
 
   loadUserData(): void {
@@ -106,27 +104,44 @@ export class SettingsComponent implements OnInit {
   }
 
   updateSecurity(): void {
-    if (this.securityForm.valid) {
-      const password = this.securityForm.get('password')?.value;
-      const confirmPassword = this.securityForm.get('confirmPassword')?.value;
-
-      // Verificar que la contraseña y la confirmación coincidan
-      if (password !== confirmPassword) {
-        console.error('Las contraseñas no coinciden');
-        return;
-      }
-
-      // Lógica para actualizar la contraseña
-      this.userService.updatePassword(password).subscribe(
-        (response) => {
-          console.log('Contraseña actualizada con éxito!', response);
-          this.securityForm.reset(); // Limpiar el formulario después de actualizar
-        },
-        (error) => {
-          console.error('Error al actualizar la contraseña', error);
-        }
+    if (this.securityForm.invalid) {
+      console.error(
+        'Formulario inválido. Asegúrate de completar todos los campos.'
       );
+      alert('Por favor, completa todos los campos correctamente.');
+      return;
     }
+
+    const oldPassword = this.securityForm.get('oldPassword')?.value.trim();
+    const newPassword = this.securityForm.get('password')?.value.trim(); // Cambiado a 'password'
+    const confirmPassword = this.securityForm
+      .get('confirmPassword')
+      ?.value.trim();
+
+    // Validación: Verificar que las contraseñas coincidan
+    if (newPassword !== confirmPassword) {
+      console.error('Las contraseñas no coinciden.');
+      alert(
+        'Las contraseñas no coinciden. Por favor, verifica e intenta de nuevo.'
+      );
+      return;
+    }
+
+    // Lógica para actualizar la contraseña
+    this.userService.updatePassword(oldPassword, newPassword).subscribe({
+      next: (response) => {
+        console.log('Contraseña actualizada con éxito!', response);
+        alert('Contraseña actualizada con éxito.');
+        this.securityForm.reset(); // Limpiar el formulario
+      },
+      error: (error) => {
+        console.error('Error al actualizar la contraseña:', error);
+        const errorMsg =
+          error.error?.error ||
+          'Ocurrió un error inesperado. Por favor, intenta de nuevo.';
+        alert(errorMsg); // Mostrar mensaje de error del servidor o uno genérico
+      },
+    });
   }
 
   deleteUser(): void {
@@ -143,49 +158,7 @@ export class SettingsComponent implements OnInit {
     }
   }
 
-  setTheme(theme: 'light' | 'dark' | 'system') {
-    this.currentTheme = theme;
-
-    if (theme === 'system') {
-      localStorage.removeItem('theme');
-    } else {
-      localStorage.setItem('theme', theme);
-    }
-
-    this.applyTheme();
-  }
-
-  applyTheme() {
-    const systemPrefersDark = window.matchMedia(
-      '(prefers-color-scheme: dark)'
-    ).matches;
-    const savedTheme = localStorage.getItem('theme');
-
-    const isDarkMode =
-      savedTheme === 'dark' || (savedTheme === null && systemPrefersDark);
-
-    if (isDarkMode) {
-      this.renderer.addClass(document.documentElement, 'dark');
-    } else {
-      this.renderer.removeClass(document.documentElement, 'dark');
-    }
-  }
-
-  listenToSystemThemeChanges() {
-    const mediaQueryList = window.matchMedia('(prefers-color-scheme: dark)');
-
-    // Crear listener para detectar cambios en las preferencias del sistema
-    const systemThemeChangeListener = (event: MediaQueryListEvent) => {
-      if (this.currentTheme === 'system') {
-        this.applyTheme(); // Actualiza el tema en tiempo real si está en modo 'system'
-      }
-    };
-
-    // Añadir el listener a la media query
-    mediaQueryList.addEventListener('change', systemThemeChangeListener);
-
-    // Guardar referencia para poder removerlo más adelante
-    this.systemThemeListener = () =>
-      mediaQueryList.removeEventListener('change', systemThemeChangeListener);
+  setTheme(theme: string): void {
+    this.statesService.setTheme(theme);
   }
 }

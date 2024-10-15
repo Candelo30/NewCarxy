@@ -37,7 +37,7 @@
 <!-- Contenedor principal -->
 <div
   class="container mx-auto h-screen px-6 py-8 bg-gray-50 dark:bg-gray-900 overflow-auto"
-  style="height: calc(100vh - 96px)"
+  style="height: calc(100vh - 196px)"
 >
   <h1
     class="text-5xl font-extrabold text-kingfisher-daisy-600 dark:text-white text-center mb-8"
@@ -118,6 +118,22 @@
         Seguridad
       </h2>
       <form [formGroup]="securityForm" (ngSubmit)="updateSecurity()">
+        <div class="mb-6">
+          <label
+            for="oldPassword"
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          >
+            Contraseña Antigua:
+          </label>
+          <input
+            id="oldPassword"
+            type="password"
+            formControlName="oldPassword"
+            class="w-full border rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-kingfisher-daisy-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition"
+            placeholder="Ingresa tu contraseña antigua"
+          />
+        </div>
+
         <div class="mb-6">
           <label
             for="password"
