@@ -117,7 +117,6 @@ class HelpArticle(models.Model):
     title = models.CharField(max_length=255)
     summary = models.TextField()
     content = models.TextField()
-    link = models.URLField(max_length=500, blank=True, null=True)
     image = models.ImageField(
         upload_to="help_articles/", blank=True, null=True
     )  # Para almacenar imágenes

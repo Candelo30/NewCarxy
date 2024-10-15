@@ -17,6 +17,7 @@ router.register(
     r"personalizaciones", PersonalizacionViewSet, basename="Personalizaciones"
 )
 router.register(r"partes", ParteViewSet, basename="parte")
-
+router.register("help-articles", HelpArticleViewSet, basename="help-article-list"),
+router.register("faqs", FAQViewSet, basename="faq-list"),
 
 urlpatterns = router.urls

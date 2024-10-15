@@ -20,10 +20,15 @@ from rest_framework.generics import (
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
-from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
+from rest_framework.permissions import (
+    IsAuthenticated,
+    AllowAny,
+    IsAdminUser,
+    IsAuthenticatedOrReadOnly,
+)
 from rest_framework.authentication import TokenAuthentication
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django.db import transaction, IntegrityError
 from django.db.models import Q
 from rest_framework import generics
@@ -81,14 +86,9 @@ def registro(request):
 class PerfilView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
-    parser_classes = [
-        MultiPartParser,
-        FormParser,
-    ]  # Para manejar archivos si es necesario
 
     def get(self, request):
         try:
-            # Obtenemos los datos del usuario autenticado
             serializer = UsuariosSerializer(instance=request.user)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
@@ -99,7 +99,6 @@ class PerfilView(APIView):
 
     def put(self, request):
         try:
-            # Actualizamos los datos del usuario autenticado
             serializer = UsuariosSerializer(
                 instance=request.user, data=request.data, partial=True
             )
@@ -125,6 +124,30 @@ class PerfilView(APIView):
                 {"error": f"Ocurrió un error al eliminar la cuenta: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
+
+class ChangePasswordView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        old_password = request.data.get("old_password")
+        new_password = request.data.get("new_password")
+
+        # Validar la contraseña antigua
+        if not request.user.check_password(old_password):
+            return Response(
+                {"error": "La contraseña actual es incorrecta."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Establecer la nueva contraseña
+        request.user.set_password(new_password)
+        request.user.save()
+
+        return Response(
+            {"message": "Contraseña actualizada con éxito."}, status=status.HTTP_200_OK
+        )
 
 
 class UsuarioViewSet(viewsets.ModelViewSet):
@@ -461,15 +484,15 @@ class ParteViewSet(viewsets.ModelViewSet):
 # ____________________________________________________
 
 
-class HelpArticleList(generics.ListAPIView):
+class HelpArticleViewSet(viewsets.ModelViewSet):
     queryset = HelpArticle.objects.all()
     serializer_class = HelpArticleSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     authentication_classes = [TokenAuthentication]
 
 
-class FAQList(generics.ListAPIView):
+class FAQViewSet(viewsets.ModelViewSet):
     queryset = FAQ.objects.all()
     serializer_class = FAQSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     authentication_classes = [TokenAuthentication]
