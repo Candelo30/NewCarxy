@@ -136,11 +136,14 @@
             </p>
 
             <!-- Imagen de la publicación -->
-            <div *ngIf="publicacion.imagen" class="mb-4">
+            <div
+              *ngIf="publicacion.imagen"
+              class="mb-4 w-full flex justify-center items-center"
+            >
               <img
                 [src]="publicacion.imagen"
                 alt="Imagen de la publicación"
-                class="h-auto rounded-lg"
+                class="h-auto rounded-lg object-contain"
               />
             </div>
 
