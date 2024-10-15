@@ -54,9 +54,11 @@ export class UserService {
     return this.http.put(`http://127.0.0.1:8000/perfil/`, formData);
   }
 
-  // Método para actualizar la contraseña del usuario
-  updatePassword(password: string): Observable<any> {
-    return this.http.put(`http://127.0.0.1:8000/perfil/`, { password });
+  updatePassword(oldPassword: string, newPassword: string): Observable<any> {
+    return this.http.post('http://127.0.0.1:8000/change-password/', {
+      old_password: oldPassword,
+      new_password: newPassword,
+    });
   }
 
   // Método para eliminar la cuenta del usuario
