@@ -7,12 +7,14 @@ import { PublicationsService } from '../../../core/services/publications.service
 import { CommonModule } from '@angular/common';
 import { UserService } from '../../../core/services/user.service';
 import { DetailsPublicationsComponent } from '../details-publications/details-publications.component';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-home',
   standalone: true,
   imports: [
     CommonModule,
+    RouterLink,
     HeaderComponent,
     LoadingButtonComponent,
     DetailsPublicationsComponent,

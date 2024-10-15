@@ -53,9 +53,24 @@
           <!--  -->
 
           <div>
-            <p class="text-gray-800 dark:text-white font-bold">
+            <!-- usuario_id -->
+            @if (userName != publicacion.usuario_username) {
+
+            <a
+              [routerLink]="['/perfil', publicacion.usuario_id]"
+              class="text-gray-800 dark:text-white font-bold"
+            >
               {{ publicacion.usuario_username }}
-            </p>
+            </a>
+            } @else {
+
+            <a
+              routerLink="/profile"
+              class="text-gray-800 dark:text-white font-bold"
+            >
+              {{ publicacion.usuario_username }}
+            </a>
+            }
             <p class="text-gray-600 dark:text-gray-400 text-sm">
               {{ publicacion.fecha_creacion | date : "yyyy-MM-dd HH:mm:ss" }}
             </p>
