@@ -10,11 +10,38 @@ export class HelpService {
 
   constructor(private http: HttpClient) {}
 
-  getArticles(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/help-articles/`);
+  getArticles(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/api/help-articles/`);
   }
 
-  getFAQs(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/faqs/`);
+  addArticle(article: FormData): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/api/help-articles/`, article);
+  }
+
+  updateArticle(articleId: number, formData: FormData): Observable<any> {
+    return this.http.put<any>(
+      `${this.apiUrl}/api/help-articles/${articleId}/`,
+      formData
+    );
+  }
+
+  deleteArticle(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/api/help-articles/${id}/`);
+  }
+
+  getFAQs(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/api/faqs/`);
+  }
+
+  addFAQ(faq: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/api/faqs/`, faq);
+  }
+
+  updateFAQ(faq: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/api/faqs/${faq.id}/`, faq);
+  }
+
+  deleteFAQ(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/api/faqs/${id}/`);
   }
 }
