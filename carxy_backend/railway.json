@@ -1,6 +1,7 @@
 {
     "build": {
-      "dockerfile": "Dockerfile"
+      "builder": "nixpacks",
+      "baseDir": "carxy_backend"
     },
     "start": {
       "command": "gunicorn carxy.wsgi:application --bind 0.0.0.0:8000"
