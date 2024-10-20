@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.core.exceptions import ValidationError
 
 
 class Usuarios(AbstractUser):
@@ -68,15 +69,21 @@ class Modelo3D(models.Model):
 
 class Personalizacion(models.Model):
     nombre_personalizacion = models.CharField(max_length=100)
-    fecha_creacion = models.DateField(
-        auto_now_add=True
-    )  # Consistente con otros modelos
+    fecha_creacion = models.DateField(auto_now_add=True)
     usuario = models.ForeignKey(
         Usuarios, on_delete=models.CASCADE, related_name="personalizaciones"
     )
     modelo = models.ForeignKey(
         Modelo3D, on_delete=models.CASCADE, related_name="personalizaciones"
     )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["usuario", "modelo", "nombre_personalizacion"],
+                name="unique_personalizacion_usuario_modelo",
+            )
+        ]
 
     def __str__(self):
         return f"{self.nombre_personalizacion} - {self.modelo.nombre_modelo}"
@@ -103,6 +110,13 @@ class Parte(models.Model):
                 name="unique_parte_per_usuario",
             )
         ]
+
+    def clean(self):
+        # Verificar que el modelo de la parte coincide con el de la personalización
+        if self.modelo != self.personalizacion.modelo:
+            raise ValidationError(
+                "El modelo de la parte debe coincidir con el modelo de la personalización."
+            )
 
     def __str__(self):
         return (

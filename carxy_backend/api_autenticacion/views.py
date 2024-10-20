@@ -398,61 +398,78 @@ class ParteViewSet(viewsets.ModelViewSet):
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
-        partes_data = request.data
-        created_parts = []
-        updated_parts = []
+        partes_data = request.data if isinstance(request.data, list) else [request.data]
+        new_parts, updated_parts = [], []
 
-        # Convertir a lista si se recibe un solo objeto
-        if isinstance(partes_data, dict):
-            partes_data = [partes_data]
+        # Validación de campos obligatorios
+        required_fields = ["nombre_parte", "color", "modelo_id", "personalizacion_id"]
+        for parte_data in partes_data:
+            for field in required_fields:
+                if field not in parte_data:
+                    return Response(
+                        {"detail": f"El campo {field} es obligatorio."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
 
-        # Mapa de partes existentes para evitar duplicados
+        # Mapa de partes existentes por clave (nombre, modelo_id, personalizacion_id)
         partes_existentes_map = {
-            (parte.nombre_parte, parte.modelo_id, parte.personalizacion_id): parte
-            for parte in Parte.objects.filter(usuario=request.user)
+            (nombre, modelo_id, personalizacion_id): parte
+            for nombre, modelo_id, personalizacion_id, parte in Parte.objects.filter(
+                usuario=request.user
+            ).values_list("nombre_parte", "modelo_id", "personalizacion_id", "id")
         }
 
         try:
             for parte_data in partes_data:
-                modelo = get_object_or_404(Modelo3D, id=parte_data.get("modelo_id"))
+                modelo = get_object_or_404(Modelo3D, id=parte_data["modelo_id"])
                 personalizacion = get_object_or_404(
-                    Personalizacion, id=parte_data.get("personalizacion_id")
+                    Personalizacion, id=parte_data["personalizacion_id"]
                 )
 
-                # Verificar que la personalización corresponde al modelo
+                # Validación: La personalización debe pertenecer al modelo indicado
                 if personalizacion.modelo != modelo:
                     return Response(
                         {
-                            "detail": "La personalización no corresponde al modelo proporcionado."
+                            "detail": "La personalización no corresponde al modelo indicado."
                         },
                         status=status.HTTP_400_BAD_REQUEST,
                     )
 
+                # Verificar si la parte ya existe
                 parte_clave = (
                     parte_data["nombre_parte"],
-                    parte_data.get("modelo_id"),
-                    parte_data.get("personalizacion_id"),
+                    parte_data["modelo_id"],
+                    parte_data["personalizacion_id"],
                 )
-                parte_existente = partes_existentes_map.get(parte_clave)
-
-                if parte_existente:
-                    # Actualizar el color de la parte existente
+                if parte_clave in partes_existentes_map:
+                    # Actualizar la parte existente
+                    parte_existente = Parte.objects.get(
+                        id=partes_existentes_map[parte_clave]
+                    )
                     parte_existente.color = parte_data["color"]
                     updated_parts.append(parte_existente)
                 else:
-                    # Crear nueva parte
-                    serializer = self.get_serializer(data=parte_data)
-                    serializer.is_valid(raise_exception=True)
-                    created_parts.append(serializer.save(usuario=request.user))
+                    # Crear una nueva parte
+                    new_parts.append(
+                        Parte(
+                            nombre_parte=parte_data["nombre_parte"],
+                            color=parte_data["color"],
+                            modelo=modelo,
+                            personalizacion=personalizacion,
+                            usuario=request.user,
+                        )
+                    )
+
+            # Guardar todas las nuevas partes de una vez
+            if new_parts:
+                Parte.objects.bulk_create(new_parts)
 
             # Guardar todas las partes actualizadas de una vez
             if updated_parts:
                 Parte.objects.bulk_update(updated_parts, ["color"])
 
-            # Serializar y devolver la respuesta
-            response_data = [ParteSerializer(parte).data for parte in created_parts] + [
-                ParteSerializer(parte).data for parte in updated_parts
-            ]
+            # Serializar la respuesta con las partes nuevas y actualizadas
+            response_data = [ParteSerializer(p).data for p in new_parts + updated_parts]
             return Response(response_data, status=status.HTTP_201_CREATED)
 
         except KeyError as e:
@@ -476,6 +493,7 @@ class ParteViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"], url_path="por-modelo/(?P<modelo_id>[^/.]+)")
     def listar_por_modelo(self, request, modelo_id=None):
+        """Listar las partes de un modelo específico filtradas por usuario."""
         partes = Parte.objects.filter(modelo_id=modelo_id, usuario=request.user)
         serializer = self.get_serializer(partes, many=True)
         return Response(serializer.data)

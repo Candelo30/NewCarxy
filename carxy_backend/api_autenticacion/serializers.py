@@ -104,10 +104,13 @@ class ComentarioSerializer(serializers.ModelSerializer):
         ]
 
     def get_usuario_foto(self, comentario):
-        request = self.context.get("request")
-        if comentario.usuario.foto_perfil:
+        request = self.context.get(
+            "request", None
+        )  # Asegura que el request esté en el contexto
+        if request and comentario.usuario and comentario.usuario.foto_perfil:
+            # Construye la URL solo si todos los elementos existen
             return request.build_absolute_uri(comentario.usuario.foto_perfil.url)
-        return None
+        return None  # Devuelve None si no hay foto o no se cumple alguna condición
 
 
 # ____________________________________________________________________________
