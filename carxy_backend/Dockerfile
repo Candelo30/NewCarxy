@@ -10,7 +10,7 @@ COPY requirements.txt .
 # Instalar dependencias
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copiar todo el contenido del directorio actual (el proyecto)
+# Copiar el resto de la aplicación
 COPY . .
 
 # Exponer el puerto que utilizará la aplicación

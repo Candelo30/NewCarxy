@@ -5,7 +5,7 @@ from carxy import settings
 from api_autenticacion import views
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    path("admin/", admin.site.urls, name="admin"),
     # Autenticación y Perfil
     path("api/", include("api_autenticacion.urls")),
     path("iniciar-sesion/", views.iniciarSesion, name="iniciar_sesion"),
@@ -22,6 +22,5 @@ urlpatterns = [
     path("registro/", views.registro, name="registro"),
     path("perfil/", views.PerfilView.as_view(), name="perfil"),
     path("change-password/", views.ChangePasswordView.as_view(), name="password"),
-    path("admin/", admin.site.urls),
     # Incluir las rutas del router
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

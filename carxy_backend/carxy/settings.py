@@ -92,14 +92,13 @@ WSGI_APPLICATION = "carxy.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": "carxy_bd",
-        "USER": "root",
-        "PASSWORD": "",
-        "HOST": "localhost",
-        "PORT": "",
+        "NAME": os.getenv("DB_NAME", "carxy_bd"),  # Nombre de la base de datos
+        "USER": os.getenv("DB_USER", "root"),  # Usuario de la base de datos
+        "PASSWORD": os.getenv("DB_PASSWORD", ""),  # Contraseña de la base de datos
+        "HOST": os.getenv("DB_HOST", "localhost"),  # Host de la base de datos
+        "PORT": os.getenv("DB_PORT", "3306"),  # Puerto de la base de datos
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
